@@ -2,8 +2,6 @@ package util;
 
 import java.awt.Point;
 
-import engine.BitBoardOperations;
-
 public class ChessNotation {
 
 	public static String convertPointToAlgebraic(Point pos) {
