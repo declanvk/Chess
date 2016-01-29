@@ -22,27 +22,51 @@ public class ChessNotation {
 	}
 	
 	public static void main(String[] args) {
-		long a = 0x000000000000FFFFL;
-		long b = BitBoardOperations.flipBoardVertically(a);
+		long aBoard = 0x000000000000FFFFL;
+		long bBoard = 0xFFFF000000000000L;
 		
-		System.out.println("a Board: ");
-		System.out.println(convertBitBoardToString(a) + "\n");
+		printPieces(aBoard, bBoard, "Boards");
 		
-		System.out.println("b Board: ");
-		System.out.println(convertBitBoardToString(b) + "\n");
-
-		System.out.println("Occupancy: ");
+		long aPawns = 0x000000000000FF00L;
+		long bPawns = 0x00FF000000000000L;
+		
+		printPieces(aPawns, bPawns, "Pawns");
+		
+		long aRooks = 0x0000000000000081L;
+		long bRooks = 0x8100000000000000L;
+		
+		printPieces(aRooks, bRooks, "Rooks");
+		
+		long aKnight = 0x0000000000000042L;
+		long bKnight = 0x4200000000000000L;
+		
+		printPieces(aKnight, bKnight, "Knights");
+		
+		long aBishop = 0x0000000000000024L;
+		long bBishop = 0x2400000000000000L;
+		
+		printPieces(aBishop, bBishop, "Bishops");
+		
+		long aQueen = 0x00000000000000008L;
+		long aKings = 0x00000000000000010L;
+		
+		long bQueen = 0x01000000000000000L;
+		long bKings = 0x00800000000000000L;
+		
+		printPieces(aQueen, bQueen, "Queens");
+		printPieces(aKings, bKings, "Kings");
+		
+	}
+	
+	private static void printPieces(long a, long b, String label) {
+		System.out.println(label + ":");
 		System.out.println(convertBitBoardToString(a | b) + "\n");
 		
-		long pawns = 0x000000000000FF00L | BitBoardOperations.flipBoardVertically(0x000000000000FF00L);
-		System.out.println("Pawns: ");
-		System.out.println(convertBitBoardToString(pawns) + "\n");
+		System.out.println("a " + label + ":");
+		System.out.println(convertBitBoardToString(a) + "\n");
 		
-		System.out.println("a Board Pawns: ");
-		System.out.println(convertBitBoardToString(pawns & a) + "\n");
-		
-		System.out.println("b Board Pawns: ");
-		System.out.println(convertBitBoardToString(pawns & b) + "\n");
+		System.out.println("b " + label + ":");
+		System.out.println(convertBitBoardToString(b) + "\n");
 	}
 	
 }
