@@ -5,15 +5,7 @@ import java.awt.Point;
 import engine.BitBoardOperations;
 
 public class ChessNotation {
-	
-	private static String[] byteLookupTable = new String[256];
-	static {
-		for(int i = 0; i < byteLookupTable.length; i++) {
-			
-			byteLookupTable[i] = (new String(new char[Math.min(7, Integer.numberOfLeadingZeros(i) - 24)]).replace("\0", "0")) + Integer.toBinaryString(i);
-		}
-	}
-	
+
 	public static String convertPointToAlgebraic(Point pos) {
 		return pos.y + "" + ((char)('a' + (pos.x - 1)));
 	}
