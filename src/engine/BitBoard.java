@@ -36,8 +36,8 @@ public class BitBoard {
 
 	public BitBoard() {
 		this.boards = new long[2][6];
-		boards[0] = Arrays.copyOf(startingConfiguration[0], startingConfiguration[0].length);
-		boards[1] = Arrays.copyOf(startingConfiguration[1], startingConfiguration[1].length);
+		boards[WHITE] = Arrays.copyOf(startingConfiguration[WHITE], startingConfiguration[WHITE].length);
+		boards[BLACK] = Arrays.copyOf(startingConfiguration[BLACK], startingConfiguration[BLACK].length);
 	}
 
 }
