@@ -1,25 +1,21 @@
-package game.pieces;
+package game;
 
 import java.awt.Point;
 import java.util.ArrayList;
 
-import game.ChessBoard;
-import game.ChessColor;
-import game.ChessMove;
-
-public abstract class ChessPiece {
+public class ChessPiece {
 	
 	private final Point position;
-	private final ChessColor color;
-	private final int value;
+	private final Color color;
+	private final PieceType type;
 	
-	public ChessPiece(Point pos, ChessColor color, int val) {
+	public ChessPiece(Point pos, Color color, PieceType type) {
 		this.position = pos;
 		this.color = color;
-		this.value = val;
+		this.type = type;
 	}
 	
-	public ChessColor getColor() {
+	public Color getColor() {
 		return this.color;
 	}
 	
@@ -37,5 +33,5 @@ public abstract class ChessPiece {
 	
 	@Override
 	public abstract String toString();
-	public abstract ArrayList<ChessMove> generateMoves(ChessBoard board);
+	public abstract ArrayList<Move> generateMoves(Board board);
 }
