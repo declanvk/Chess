@@ -20,6 +20,10 @@ public enum PieceType {
 		return this.value;
 	}
 	
+	public int getID() {
+		return this.ordinal();
+	}
+	
 	@Override
 	public String toString() {
 		return name;

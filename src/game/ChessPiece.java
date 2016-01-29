@@ -3,6 +3,9 @@ package game;
 import java.awt.Point;
 import java.util.ArrayList;
 
+import util.ChessNotation;
+import game.Board;
+
 public class ChessPiece {
 	
 	private final Point position;
@@ -28,10 +31,14 @@ public class ChessPiece {
 	}
 	
 	public int getValue() {
-		return value;
+		return type.getValue();
 	}
 	
 	@Override
-	public abstract String toString();
-	public abstract ArrayList<Move> generateMoves(Board board);
+	public String toString() {
+		return color + " " + type + " at " + ChessNotation.convertPointToAlgebraic(position);
+	}
+	public ArrayList<Move> generateMoves(Board board) {
+		return null;
+	}
 }

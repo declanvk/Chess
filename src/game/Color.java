@@ -11,6 +11,10 @@ public enum Color {
 	}
 	
 	public String toString() {
-		return null;
+		return name;
+	}
+	
+	public int getID() {
+		return this.ordinal();
 	}
 }

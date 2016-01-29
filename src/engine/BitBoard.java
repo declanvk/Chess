@@ -6,8 +6,6 @@ public class BitBoard {
 
 	public BitBoard() {
 		boards = new long[2][6];
-		
-		
 	}
 
 }
