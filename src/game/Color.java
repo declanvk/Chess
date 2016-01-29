@@ -1,12 +1,12 @@
 package game;
 
-public enum ChessColor {
+public enum Color {
 	WHITE("white"),
 	BLACK("black");
 	
 	private final String name;
 	
-	ChessColor(String name) {
+	Color(String name) {
 		this.name = name;
 	}
 	
