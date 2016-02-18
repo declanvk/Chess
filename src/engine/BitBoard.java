@@ -1,18 +1,11 @@
 package engine;
 
 import java.util.Arrays;
+import game.Move;
+import game.Color;
+import game.PieceType;
 
 public class BitBoard {
-	
-	private static final int WHITE = 0;
-	private static final int BLACK = 1;
-	
-	private static final int PAWN = 0;
-	private static final int ROOK = 1;
-	private static final int KNIGHT = 2;
-	private static final int BISHOP = 3;
-	private static final int QUEEN = 4;
-	private static final int KING = 5;
 	
 	private static final long[][] startingConfiguration = {
 	{//White
@@ -36,8 +29,50 @@ public class BitBoard {
 
 	public BitBoard() {
 		this.boards = new long[2][6];
-		boards[WHITE] = Arrays.copyOf(startingConfiguration[WHITE], startingConfiguration[WHITE].length);
-		boards[BLACK] = Arrays.copyOf(startingConfiguration[BLACK], startingConfiguration[BLACK].length);
+		boards[Color.WHITE.getID()] = Arrays.copyOf(startingConfiguration[Color.WHITE.getID()], startingConfiguration[Color.WHITE.getID()].length);
+		boards[Color.BLACK.getID()] = Arrays.copyOf(startingConfiguration[Color.BLACK.getID()], startingConfiguration[Color.BLACK.getID()].length);
+	}
+	
+	private BitBoard(long[][] boards) {
+		this.boards = boards;
+	}
+	
+	public BitBoard applyMove(Move move) {
+		BitBoard newBoard = this.clone();
+		
+		//TODO apply move
+		//Move should be a 
+		
+		return newBoard;
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.deepHashCode(boards);
+		return result;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		BitBoard other = (BitBoard) obj;
+		if (!Arrays.deepEquals(boards, other.boards))
+			return false;
+		return true;
+	}
+
+	@Override
+	public BitBoard clone() {
+		long[][] newBoard = new long[2][6];
+		boards[Color.WHITE.getID()] = Arrays.copyOf(this.boards[Color.WHITE.getID()], 6);
+		boards[Color.BLACK.getID()] = Arrays.copyOf(this.boards[Color.BLACK.getID()], 6);
+		return new BitBoard(newBoard);
+	}
 }

@@ -5,25 +5,25 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import engine.BitBoard;
 import gui.ChessSerializable;
 
 @SuppressWarnings("serial")
-public class Board implements ChessSerializable {
+public class ChessGame implements ChessSerializable {
 	
 	public static final int BOARD_HEIGHT = 8;
 	public static final int BOARD_WIDTH = 8;
 	
 	public static boolean isPositionValid(Point pos) {
-		return pos.x > 0 && pos.x <= BOARD_WIDTH && pos.y > 0 && pos.y <= Board.BOARD_HEIGHT;
+		return pos.x > 0 && pos.x <= BOARD_WIDTH && pos.y > 0 && pos.y <= ChessGame.BOARD_HEIGHT;
 	}
 	
-	private final String name;
+	private String name;
+	private File save;
 	private final HashMap<Point, ChessPiece> whitePieces;
 	private final HashMap<Point, ChessPiece> blackPieces;
 	private final ArrayList<Move> history;
 	
-	public Board(String name, BitBoard board) {
+	public ChessGame(String name) {
 		this.name = name;
 		this.whitePieces = new HashMap<Point, ChessPiece>();
 		this.blackPieces = new HashMap<Point, ChessPiece>();
@@ -32,37 +32,31 @@ public class Board implements ChessSerializable {
 
 	@Override
 	public boolean isSaved() {
-		// TODO Auto-generated method stub
-		return false;
+		return save != null;
 	}
 
 	@Override
 	public File getSave() {
-		// TODO Auto-generated method stub
-		return null;
+		return save;
 	}
 
 	@Override
 	public void setSave(File f) {
-		// TODO Auto-generated method stub
-		
+		this.save = f;
 	}
 
 	@Override
 	public String getName() {
-		// TODO Auto-generated method stub
-		return null;
+		return name;
 	}
 
 	@Override
 	public void setName(String s) {
-		// TODO Auto-generated method stub
-		
+		this.name = s;
 	}
 
 	@Override
 	public String getSuffix() {
-		// TODO Auto-generated method stub
-		return null;
+		return "chess";
 	}
 }

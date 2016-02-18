@@ -1,11 +1,11 @@
 package util;
 
-import java.awt.Point;
+import game.Position;
 
 public class ChessNotation {
 
-	public static String convertPointToAlgebraic(Point pos) {
-		return pos.y + "" + ((char)('a' + (pos.x - 1)));
+	public static String convertPointToAlgebraic(Position pos) {
+		return pos.getY() + "" + ((char)('a' + (pos.getX() - 1)));
 	}
 	
 	public static String convertBitBoardToString(long board) {
@@ -54,6 +54,18 @@ public class ChessNotation {
 		printPieces(aQueen, bQueen, "Queens");
 		printPieces(aKings, bKings, "Kings");
 		
+		long diagonal = 0x102040810204080L;
+		long rank1 = 0x8080808080808080L;
+		long masked = 0x2040810204080L;
+		System.out.println(convertBitBoardToString((diagonal & (aBoard | bBoard))) + "\n");
+		System.out.println(convertBitBoardToString(((diagonal & (aBoard | bBoard)) * rank1)) + "\n");
+		System.out.println(convertBitBoardToString(((diagonal & (aBoard | bBoard)) * rank1) >>> 56) + "\n");
+		
+		System.out.println(convertBitBoardToString(masked) + "\n");
+		System.out.println(convertBitBoardToString(rank1) + "\n");
+		System.out.println(convertBitBoardToString((rank1 * masked)) + "\n");
+		System.out.println(convertBitBoardToString((rank1 * masked) << 1) + "\n");
+		System.out.println(convertBitBoardToString((rank1 * masked) >>> 56) + "\n");
 	}
 	
 	private static void printPieces(long a, long b, String label) {

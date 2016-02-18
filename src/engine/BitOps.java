@@ -1,14 +1,21 @@
 package engine;
 
-public class BitBoardOps {
+public class BitOps {
 	
 	/*
 	 * Code for these methods is from:
-	 * https://chessprogramming.wikispaces.com/Flipping+Mirroring+and+Rotating
+	 * https://chessprogramming.wikispaces.com
 	 * 
 	 * I did produce any of this, only formatted and changed it to work with Java.
 	 */
 	
+	private static byte[] popCountLookup = new byte[256];
+	static {
+		popCountLookup[0] = 0;
+		for(int i = 1; i< popCountLookup.length; i++) {
+			popCountLookup[i] = (byte) (popCountLookup[i / 2] + (i & 1));
+		}
+	}
 
 	public static long flipVert(long board) {
 		long k1 = 0x00FF00FF00FF00FFL;
@@ -55,5 +62,35 @@ public class BitBoardOps {
 		t = k1 & (x ^ (x << 9));
 		x ^= t ^ (t >> 9) ;
 		return x;
+	}
+	
+	public static boolean isSingleton(long x) {
+		return (x & (x - 1)) == 0L;
+	}
+	
+	public static int popCount(long x) {
+		return popCountLookup[(int) (x & 0xff)]
+				+ popCountLookup[(int) ((x >>  8) & 0xff)]
+				+ popCountLookup[(int) ((x >> 16) & 0xff)]
+				+ popCountLookup[(int) ((x >> 24) & 0xff)]
+				+ popCountLookup[(int) ((x >> 32) & 0xff)]
+				+ popCountLookup[(int) ((x >> 40) & 0xff)]
+				+ popCountLookup[(int) ((x >> 48) & 0xff)]
+				+ popCountLookup[ (int) (x >> 56)];
+	}
+	
+	public static long[] splitIntoSingletons(long x) {
+		long[] singletons = new long[popCount(x)];
+		
+		int i = 0;
+		long l = 0;
+		while(x != 0) {
+			l = Long.lowestOneBit(x);
+			singletons[i] = l;
+			x ^= l;
+			i++;
+		}
+		
+		return singletons;
 	}
 }
