@@ -1,70 +1,57 @@
 package game;
 
-import java.awt.Point;
-
 public class Position {
 	
-	private final Point position;
+	private final int rank, file;
 
-	public Position(Point p) {
-		if(p.x > 8 || p.x < 1 || p.y > 8 || p.y < 1) {
-			throw new IllegalArgumentException("Position out of chess bounds.");
+	public Position(int r, int f) {
+		if(r < 1 || r > 8 || f < 1 || f > 8) {
+			throw new IllegalArgumentException("Rank and/or file must be within the bounds of the game");
+		} else {
+			this.rank = r;
+			this.file = f;
 		}
-		
-		this.position = p;
 	}
 
-	public Point getPosition() {
-		return position;
+	public int getRank() {
+		return rank;
 	}
 
-	/**
-	 * @return
-	 * @see java.awt.Point#getX()
-	 */
-	public double getX() {
-		return position.getX();
+	public int getFile() {
+		return file;
 	}
 
-	/**
-	 * @return
-	 * @see java.awt.Point#getY()
-	 */
-	public double getY() {
-		return position.getY();
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + file;
+		result = prime * result + rank;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Position other = (Position) obj;
+		if (file != other.file)
+			return false;
+		if (rank != other.rank)
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "Position [rank=" + rank + ", file=" + file + "]";
 	}
 	
-	public double distance(Position other) {
-		return this.position.distance(other.position);
+	public String algebraicPosition() {
+		return file + "" + ((char)('a' + (rank - 1)));
 	}
-
-	/**
-	 * @param obj
-	 * @return
-	 * @see java.awt.Point#equals(java.lang.Object)
-	 */
-	public boolean equals(Object obj) {
-		return position.equals(obj);
-	}
-
-	/**
-	 * @return
-	 * @see java.awt.Point#toString()
-	 */
-	public String toString() {
-		return position.toString();
-	}
-
-	public Object clone() {
-		return new Position((Point) position.clone());
-	}
-
-	/**
-	 * @return
-	 * @see java.awt.geom.Point2D#hashCode()
-	 */
-	public int hashCode() {
-		return position.hashCode();
-	}
-
 }

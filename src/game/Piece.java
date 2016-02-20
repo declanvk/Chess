@@ -1,19 +1,19 @@
 package game;
 
-public enum PieceType {
-	KING(Integer.MAX_VALUE, "king", "\u2654", "\u265A"),
-	QUEEN(8, "queen", "\u2655", "\u265B"),
-	ROOK(5, "rook", "\u2656", "\u265C"),
-	BISHOP(3, "bishop", "\u2657", "\u265D"),
+public enum Piece {
+	PAWN(1, "pawn", "\u2659", "\u265F"),
 	KNIGHT(3, "knight", "\u2658", "\u265E"),
-	PAWN(1, "pawn", "\u2659", "\u265F");
+	BISHOP(3, "bishop", "\u2657", "\u265D"),
+	ROOK(5, "rook", "\u2656", "\u265C"),
+	QUEEN(8, "queen", "\u2655", "\u265B"),
+	KING(Integer.MAX_VALUE, "king", "\u2654", "\u265A");
 	
 	private final int value;
 	private final String name;
 	private final String whiteUnicode;
 	private final String blackUnicode;
 	
-	PieceType(int val, String name, String white, String black) {
+	Piece(int val, String name, String white, String black) {
 		this.value = val;
 		this.name = name;
 		this.whiteUnicode = white;

@@ -1,12 +1,6 @@
-package util;
-
-import game.Position;
+package engine;
 
 public class ChessNotation {
-
-	public static String convertPointToAlgebraic(Position pos) {
-		return pos.getY() + "" + ((char)('a' + (pos.getX() - 1)));
-	}
 	
 	public static String convertBitBoardToString(long board) {
 		String sBoard = Long.toBinaryString(board);
@@ -17,6 +11,24 @@ public class ChessNotation {
 		
 		String[] chunks = sBoard.split("(?<=\\G.{16})");
 		return String.join("\n", chunks);
+	}
+	
+	public static String collateBitBoards(long... boards) {
+		String[][] boardStrings = new String[boards.length][8];
+		String temp = null;
+		for(int i = 0; i < boards.length; i++) {
+			temp = convertBitBoardToString(boards[i]);
+			boardStrings[i] = temp.substring(0, temp.length()).split("\n");
+		}
+		
+		String result = "";
+		for(int j = 0; j < 8; j++) {
+			for(int i = 0; i < boardStrings.length; i++) {
+				result += boardStrings[i][j] + ((i < boardStrings.length - 1 ) ? " \t" : " ");
+			}
+			result += "\n";
+		}
+		return result;
 	}
 	
 	public static void main(String[] args) {
@@ -66,6 +78,9 @@ public class ChessNotation {
 		System.out.println(convertBitBoardToString((rank1 * masked)) + "\n");
 		System.out.println(convertBitBoardToString((rank1 * masked) << 1) + "\n");
 		System.out.println(convertBitBoardToString((rank1 * masked) >>> 56) + "\n");
+		
+		System.out.println(collateBitBoards(MoveGeneration.knightAttacksLookup));
+		System.out.println(collateBitBoards(MoveGeneration.kingAttacksLookup));		
 	}
 	
 	private static void printPieces(long a, long b, String label) {

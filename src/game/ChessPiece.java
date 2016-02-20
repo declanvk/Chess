@@ -1,37 +1,54 @@
 package game;
 
-import util.ChessNotation;
-
 public class ChessPiece {
 	
-	private Position position;
 	private final Color color;
-	private final PieceType type;
+	private final Piece type;
 	
-	public ChessPiece(Position pos, Color color, PieceType type) {
-		this.position = pos;
+	public ChessPiece(Color color, Piece type) {
 		this.color = color;
 		this.type = type;
 	}
-	
+
+	public String getUnicode() {
+		return color == Color.WHITE ? type.getWhiteUnicode() : type.getBlackUnicode();
+	}
+
 	public Color getColor() {
-		return this.color;
+		return color;
 	}
-	
-	public Position getPosition() {
-		return this.position;
-	}
-	
-	public void setPosition(Position pos) {
-		this.position = pos;
-	}
-	
-	public int getValue() {
-		return type.getValue();
+
+	public Piece getType() {
+		return type;
 	}
 	
 	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((color == null) ? 0 : color.hashCode());
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ChessPiece other = (ChessPiece) obj;
+		if (color != other.color)
+			return false;
+		if (type != other.type)
+			return false;
+		return true;
+	}
+
+	@Override
 	public String toString() {
-		return color + " " + type + " at " + ChessNotation.convertPointToAlgebraic(position);
+		return "ChessPiece [color=" + color + ", type=" + type + "]";
 	}
 }
