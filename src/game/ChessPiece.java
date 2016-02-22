@@ -2,19 +2,19 @@ package game;
 
 public class ChessPiece {
 	
-	private final Color color;
+	private final ChessColor color;
 	private final Piece type;
 	
-	public ChessPiece(Color color, Piece type) {
+	public ChessPiece(ChessColor color, Piece type) {
 		this.color = color;
 		this.type = type;
 	}
 
 	public String getUnicode() {
-		return color == Color.WHITE ? type.getWhiteUnicode() : type.getBlackUnicode();
+		return color == ChessColor.WHITE ? type.getWhiteUnicode() : type.getBlackUnicode();
 	}
 
-	public Color getColor() {
+	public ChessColor getColor() {
 		return color;
 	}
 

@@ -2,15 +2,15 @@ package gui;
 
 import javax.swing.JComponent;
 
-import game.Color;
+import game.ChessColor;
 import game.Move;
 
 public abstract class Player {
 	
 	private final String name;
-	private final Color color;
+	private final ChessColor color;
 
-	public Player(String name, Color color) {
+	public Player(String name, ChessColor color) {
 		this.name = name;
 		this.color = color;
 	}
@@ -22,7 +22,7 @@ public abstract class Player {
 		return name;
 	}
 
-	public Color getColor() {
+	public ChessColor getColor() {
 		return color;
 	}
 }

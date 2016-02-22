@@ -2,7 +2,7 @@ package engine;
 
 import java.util.Arrays;
 
-import game.Color;
+import game.ChessColor;
 import game.Piece;
 
 public class OccupancyBitBoard {
@@ -29,15 +29,15 @@ public class OccupancyBitBoard {
 
 	public OccupancyBitBoard() {
 		this.boards = new long[2][6];
-		boards[Color.WHITE.getID()] = Arrays.copyOf(startingConfiguration[Color.WHITE.getID()], startingConfiguration[Color.WHITE.getID()].length);
-		boards[Color.BLACK.getID()] = Arrays.copyOf(startingConfiguration[Color.BLACK.getID()], startingConfiguration[Color.BLACK.getID()].length);
+		boards[ChessColor.WHITE.getID()] = Arrays.copyOf(startingConfiguration[ChessColor.WHITE.getID()], startingConfiguration[ChessColor.WHITE.getID()].length);
+		boards[ChessColor.BLACK.getID()] = Arrays.copyOf(startingConfiguration[ChessColor.BLACK.getID()], startingConfiguration[ChessColor.BLACK.getID()].length);
 	}
 	
 	private OccupancyBitBoard(long[][] boards) {
 		this.boards = boards;
 	}
 	
-	public long getBoard(Piece type, Color color) {
+	public long getBoard(Piece type, ChessColor color) {
 		return boards[color.getID()][type.getID()];
 	}
 	
@@ -66,8 +66,8 @@ public class OccupancyBitBoard {
 	@Override
 	public OccupancyBitBoard clone() {
 		long[][] newBoard = new long[2][6];
-		boards[Color.WHITE.getID()] = Arrays.copyOf(this.boards[Color.WHITE.getID()], 6);
-		boards[Color.BLACK.getID()] = Arrays.copyOf(this.boards[Color.BLACK.getID()], 6);
+		boards[ChessColor.WHITE.getID()] = Arrays.copyOf(this.boards[ChessColor.WHITE.getID()], 6);
+		boards[ChessColor.BLACK.getID()] = Arrays.copyOf(this.boards[ChessColor.BLACK.getID()], 6);
 		return new OccupancyBitBoard(newBoard);
 	}
 }
