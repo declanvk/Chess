@@ -1,14 +1,23 @@
 package gui;
 
-import javax.swing.JComponent;
+import java.awt.event.MouseEvent;
+
+import javax.swing.JPanel;
+import javax.swing.SwingWorker;
+import javax.swing.event.MouseInputAdapter;
 
 import game.ChessColor;
 import game.Move;
 
-public class MinimalPlayer extends Player {
+public class MinimalPlayer extends Player<MouseInputAdapter> {
 
 	public MinimalPlayer(String name, ChessColor color) {
-		super(name, color);
+		super(name, color, new MouseInputAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				super.mouseClicked(e);
+			}
+		});
 	}
 
 	@Override
@@ -17,7 +26,7 @@ public class MinimalPlayer extends Player {
 	}
 
 	@Override
-	public Move getMove(JComponent parent) {
+	public SwingWorker<Move, Integer> getMove(JPanel parent) {
 		return null;
 	}
 

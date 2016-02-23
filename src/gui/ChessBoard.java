@@ -91,7 +91,7 @@ public class ChessBoard extends JPanel {
 	}
 
 	@Override
-	protected void paintComponent(Graphics g) {
+	public void paintComponent(Graphics g) {
 		Graphics2D g2 = (Graphics2D) g;
 		super.paintComponent(g2);
 		if (game == null)
