@@ -1,15 +1,17 @@
 package game;
 
 public class Move {
-	
+
 	public enum MoveFlags {
 		QUIET, CAPTURE, PROMOTION, CASTLE, EN_PASSANT, DOUBLE_PAWN_PUSH
 	}
-	
-	private final Position start, end;
-	private final MoveFlags flag;
-	
-	public Move(Position start, Position end, MoveFlags flags) {
+
+	private final Position		start, end;
+	private final MoveFlags		flag;
+	private final ChessPiece	piece;
+
+	public Move(ChessPiece piece, Position start, Position end, MoveFlags flags) {
+		this.piece = piece;
 		this.start = start;
 		this.end = end;
 		this.flag = flags;
@@ -23,8 +25,12 @@ public class Move {
 		return end;
 	}
 
-	public MoveFlags getFlags() {
+	public MoveFlags getFlag() {
 		return flag;
+	}
+
+	public ChessPiece getPiece() {
+		return piece;
 	}
 
 	@Override
@@ -33,6 +39,7 @@ public class Move {
 		int result = 1;
 		result = prime * result + ((end == null) ? 0 : end.hashCode());
 		result = prime * result + ((flag == null) ? 0 : flag.hashCode());
+		result = prime * result + ((piece == null) ? 0 : piece.hashCode());
 		result = prime * result + ((start == null) ? 0 : start.hashCode());
 		return result;
 	}
@@ -53,6 +60,11 @@ public class Move {
 			return false;
 		if (flag != other.flag)
 			return false;
+		if (piece == null) {
+			if (other.piece != null)
+				return false;
+		} else if (!piece.equals(other.piece))
+			return false;
 		if (start == null) {
 			if (other.start != null)
 				return false;
@@ -63,7 +75,8 @@ public class Move {
 
 	@Override
 	public String toString() {
-		return "Move [start=" + start.algebraicPosition() + ", end=" + end.algebraicPosition() + ", flag=" + flag + "]";
+		return "Move [start=" + start.algebraicPosition() + ", end=" + end.algebraicPosition()
+				+ ", flag=" + flag + ", piece=" + piece + "]";
 	}
 
 }

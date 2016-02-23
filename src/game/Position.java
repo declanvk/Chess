@@ -4,6 +4,10 @@ public class Position {
 
     private final int rank;
     private final int file;
+    
+    public static boolean isValidPosition(int file, int rank) {
+    	return !(rank < 1 || rank > 8 || file < 1 || file > 8);
+    }
 
     public Position(int file, int rank) {
         if (rank < 1 || rank > 8 || file < 1 || file > 8) {
