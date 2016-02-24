@@ -17,7 +17,7 @@ import game.ChessPiece;
 import game.Position;
 
 @SuppressWarnings("serial")
-public class ChessBoard extends JPanel {
+public class ChessBoardPanel extends JPanel {
 
 	private final String						name;
 
@@ -47,7 +47,7 @@ public class ChessBoard extends JPanel {
 	private final Color							dark			= Color.DARK_GRAY;
 	private final Color							light			= Color.LIGHT_GRAY;
 
-	public ChessBoard(String name, Player white, Player black) {
+	public ChessBoardPanel(String name, Player white, Player black) {
 		this.name = name;
 		this.game = new ChessGame(name);
 		this.whitePlayer = white;
@@ -152,7 +152,7 @@ public class ChessBoard extends JPanel {
 			for (int rank = 0; rank < boxes[file].length; rank++) {
 				x = boxes[file][rank].x + dx;
 				y = boxes[file][rank].y + dy;
-				piece = game.getPiece(new Position(file + 1, rank + 1).flipFile());
+				piece = game.getPiece(new Position(file + 1, rank + 1));
 				if (piece != null) {
 					content = piece.getUnicode();
 					g2.setColor(piece.getColor().getDrawColor());
