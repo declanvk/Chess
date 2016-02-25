@@ -35,6 +35,27 @@ public class Position {
     public Position flipFile() {
     	return new Position(8 - file + 1, rank);
     }
+    
+    public boolean isAdjacent(Position other) {
+    	int val = Math.max(Math.abs(other.file - this.file), Math.abs(other.rank - this.rank));
+    	return 0 < val && val <= 1;
+    }
+    
+    public boolean isDiagonallyAdjacent(Position other) {
+    	return Math.abs(this.file - other.file) == 1 && Math.abs(this.rank - other.rank) == 1;
+    }
+    
+    public boolean isDirectlyAdjacent(Position other) {
+    	return Math.abs(this.file - other.file) + Math.abs(this.rank - other.rank) == 1;
+    }
+    
+    public boolean isFileAdjacent(Position other) {
+    	return Math.abs(this.file - other.file) == 1 && this.rank == other.rank;
+    }
+    
+    public boolean isRankAdjacent(Position other) {
+    	return Math.abs(this.rank - other.rank) == 1 && this.file == other.file;
+    }
 
     @Override
     public int hashCode() {
