@@ -2,6 +2,11 @@ package game;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
 import game.Move.MoveFlags;
 
@@ -43,14 +48,20 @@ public class MoveGeneration {
 			return false;
 		} else {
 			Position newPos = new Position(rank, file);
+			EnumSet<MoveFlags> flags = EnumSet.noneOf(MoveFlags.class);
+			if (piece.getColor().getHomeRank() == rank) {
+				flags.add(MoveFlags.PROMOTION);
+			}
 
 			if (board.isEmpty(newPos)) {
-				return results.add(new Move(piece, oldPos, newPos, MoveFlags.QUIET));
+				flags.add(MoveFlags.QUIET);
+				return results.add(new Move(piece, oldPos, newPos, flags));
 			} else if (board.isColor(piece.getColor(), newPos)) {
 				return false;
 			} else {
 				if (!pawnFlag) {
-					results.add(new Move(piece, oldPos, newPos, MoveFlags.CAPTURE));
+					flags.add(MoveFlags.CAPTURE);
+					results.add(new Move(piece, oldPos, newPos, flags));
 				}
 				return false;
 			}
@@ -73,90 +84,113 @@ public class MoveGeneration {
 		return generateSlidingPieceMoves(queenRay, piece, pos, board);
 	}
 
-	// TODO Implement
-	private static ArrayList<Move> kingMoves(ChessPiece piece, Position pos, ChessBoard board) {
-		ArrayList<Move> results = new ArrayList<Move>();
+	private static final int[][] kingOffsets = { { -1, -1 }, { 0, -1 }, { +1, -1 }, { +1, 0 },
+			{ -1, 0 }, { -1, +1 }, { 0, +1 }, { +1, +1 } };
 
-		return results;
-	}
+	private static ArrayList<Move> kingMoves(ChessPiece piece, Position pos, ChessBoard board, boolean[][] taboo) {
+		ArrayList<Move> results = generateOffsetPieceMoves(kingOffsets, piece, pos, board);
 
-	// Avoiding unnecessary branching with preloaded information
-
-	// Key:
-	// pawnOffsets[a][b][c]
-	// a: [0 - white, 1 - black]
-	// b: [0 - regular pawn move, 1 - double pawn push, 3 and 4 capture on diag]
-	// c: [0 - file, 1 - rank]
-	// En passant is just a special case of the capture on diag
-	private static int[][][]	pawnOffsets	= { { { 0, +1 }, { 0, +2 }, { -1, +1 }, { +1, +1 } },
-			{ { 0, -1 }, { 0, -2 }, { +1, -1 }, { -1, -1 } } };
-
-	// Key
-	// pawnInfo[a][b][c]
-	// a: [0 - white, 1 - black]
-	// b: [0 - starting rank, 1 - en passant rank]
-	private static int[][]		pawnInfo	= { { 2, 5 }, { 7, 4 } };
-
-	private static ArrayList<Move> pawnMoves(ChessPiece piece, Position pos, ChessBoard board, ArrayDeque<Move> history) {
-		ArrayList<Move> results = new ArrayList<Move>();
-
-		boolean normalMoveResult = checkAndAdd(piece, pos,
-				pos.getFile() + pawnOffsets[piece.getColor().getID()][0][0],
-				pos.getRank() + pawnOffsets[piece.getColor().getID()][0][1], results, board, true);
-
-		if (normalMoveResult && pos.getRank() == pawnInfo[piece.getColor().getID()][0]) {
-			checkAndAdd(piece, pos, pos.getFile() + pawnOffsets[piece.getColor().getID()][1][0],
-					pos.getRank() + pawnOffsets[piece.getColor().getID()][1][1], results, board,
-					true);
+		Iterator<Move> iter = results.iterator();
+		Move m = null;
+		while (iter.hasNext()) {
+			m = iter.next();
+			if (!taboo[m.getEnd().getFile()][m.getEnd().getRank()]) {
+				iter.remove();
+			}
 		}
 
-		for (int i = 3; i <= 4; i++) {
-			checkAndAdd(piece, pos, pos.getFile() + pawnOffsets[piece.getColor().getID()][i][0],
-					pos.getRank() + pawnOffsets[piece.getColor().getID()][i][1], results, board,
-					false);
-		}
+		if (!board.hasKingMoved(piece.getColor())) {
+			if (!board.hasKingsideRookMoved(piece.getColor())
+					&& board.isFileRangeEmpty(pos.getFile() - 1, pos.getFile() - 3,
+							piece.getColor().getHomeRank())
+					&& ChessBoard.checkTabooFileRange(taboo, pos.getFile() - 1, pos.getFile() - 3,
+							piece.getColor().getHomeRank())) {
+				results.add(new Move(piece, pos,
+						new Position(pos.getFile() - 2, piece.getColor().getHomeRank()),
+						EnumSet.of(MoveFlags.CASTLE)));
+			}
 
-		if (history.size() > 0 && history.getLast().getFlag() == MoveFlags.DOUBLE_PAWN_PUSH
-				&& history.getLast().getPiece().getColor() != piece.getColor()) {
-			Move possibleEnPassant = history.getLast();
-			if (pos.isFileAdjacent(possibleEnPassant.getEnd())) {
-				Position passantPosition = new Position(possibleEnPassant.getEnd().getFile(),
-						pos.getRank() + pawnOffsets[piece.getColor().getID()][3][1]);
-				results.add(new Move(piece, pos, passantPosition, MoveFlags.EN_PASSANT));
+			if (!board.hasQueensideRookMoved(piece.getColor())
+					&& board.isFileRangeEmpty(pos.getFile() + 1, pos.getFile() + 2,
+							piece.getColor().getHomeRank())
+					&& ChessBoard.checkTabooFileRange(taboo, pos.getFile() + 1, pos.getFile() + 2,
+							piece.getColor().getHomeRank())) {
+				results.add(new Move(piece, pos,
+						new Position(pos.getFile() + 2, piece.getColor().getHomeRank()),
+						EnumSet.of(MoveFlags.CASTLE)));
 			}
 		}
 
 		return results;
 	}
 
-	// TODO Implement. Highly inefficient design.
-	public static boolean[][] generateTabooBoard(ChessColor c, ChessBoard board) {
-		return null;
+	private static ArrayList<Move> pawnMoves(ChessPiece piece, Position pos, ChessBoard board, ArrayDeque<Move> history) {
+		ArrayList<Move> results = new ArrayList<Move>();
+
+		boolean normalMoveResult = checkAndAdd(piece, pos, pos.getFile(),
+				pos.getRank() + piece.getColor().getForwardDirection(), results, board, true);
+
+		if (normalMoveResult && pos.getRank() == piece.getColor().getHomeRank()
+				+ piece.getColor().getForwardDirection()) {
+			checkAndAdd(piece, pos, pos.getFile(),
+					pos.getRank() + 2 * piece.getColor().getForwardDirection(), results, board,
+					true);
+		}
+
+		checkAndAdd(piece, pos, pos.getFile() - 1,
+				pos.getRank() + piece.getColor().getForwardDirection(), results, board, false);
+		checkAndAdd(piece, pos, pos.getFile() + 1,
+				pos.getRank() + piece.getColor().getForwardDirection(), results, board, false);
+
+		if (history.size() > 0 && history.getLast().getFlags().contains(MoveFlags.DOUBLE_PAWN_PUSH)
+				&& history.getLast().getPiece().getColor() != piece.getColor()) {
+			Move possibleEnPassant = history.getLast();
+			if (pos.isFileAdjacent(possibleEnPassant.getEnd())) {
+				Position passantPosition = new Position(possibleEnPassant.getEnd().getFile(),
+						pos.getRank() + piece.getColor().getForwardDirection());
+				results.add(
+						new Move(piece, pos, passantPosition, EnumSet.of(MoveFlags.EN_PASSANT)));
+			}
+		}
+
+		return results;
 	}
 
-	public static ArrayList<Move> getMoves(ChessPiece piece, Position position, ChessBoard board, ArrayDeque<Move> history) {
-		ArrayList<Move> results = null;
-		switch (piece.getType()) {
-			case PAWN:
-				results = pawnMoves(piece, position, board, history);
-				break;
-			case ROOK:
-				results = rookMoves(piece, position, board);
-				break;
-			case KNIGHT:
-				results = knightMoves(piece, position, board);
-				break;
-			case BISHOP:
-				results = bishopMoves(piece, position, board);
-				break;
-			case QUEEN:
-				results = queenMoves(piece, position, board);
-				break;
-			case KING:
-				results = kingMoves(piece, position, board);
-				break;
+	// Seems pretty inefficient.
+	public static boolean[][] generateTabooBoard(ChessColor c, ChessBoard board, ArrayDeque<Move> history, boolean[][] oppositeTaboo) {
+		HashMap<Position, ChessPiece> pieces = board.getPiecesByColor(c.opposite());
+		ArrayList<Move> moves = new ArrayList<Move>();
+		boolean[][] taboo = new boolean[8][8]; // [file][rank]
+		for (int i = 0; i < taboo.length; i++) {
+			Arrays.fill(taboo[i], true);
 		}
-		return results;
+
+		for (Entry<Position, ChessPiece> entry : pieces.entrySet()) {
+			moves.addAll(getMoves(entry.getValue(), entry.getKey(), board, history, oppositeTaboo));
+		}
+
+		for (Move move : moves) {
+			taboo[move.getEnd().getFile()][move.getEnd().getRank()] = false;
+		}
+
+		return taboo;
+	}
+
+	public static ArrayList<Move> getMoves(ChessPiece piece, Position position, ChessBoard board, ArrayDeque<Move> history, boolean[][] taboo) {
+		Piece type = piece.getType();
+		if (type == Piece.PAWN) {
+			return pawnMoves(piece, position, board, history);
+		} else if (type == Piece.ROOK) {
+			return rookMoves(piece, position, board);
+		} else if (type == Piece.KNIGHT) {
+			return knightMoves(piece, position, board);
+		} else if (type == Piece.BISHOP) {
+			return bishopMoves(piece, position, board);
+		} else if (type == Piece.QUEEN) {
+			return queenMoves(piece, position, board);
+		} else {
+			return kingMoves(piece, position, board, taboo);
+		}
 	}
 
 }

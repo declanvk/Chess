@@ -1,20 +1,22 @@
 package game;
 
+import java.util.EnumSet;
+
 public class Move {
 
 	public enum MoveFlags {
 		QUIET, CAPTURE, PROMOTION, CASTLE, EN_PASSANT, DOUBLE_PAWN_PUSH
 	}
 
-	private final Position		start, end;
-	private final MoveFlags		flag;
-	private final ChessPiece	piece;
+	private final Position				start, end;
+	private final EnumSet<MoveFlags>	flags;
+	private final ChessPiece			piece;
 
-	public Move(ChessPiece piece, Position start, Position end, MoveFlags flags) {
+	public Move(ChessPiece piece, Position start, Position end, EnumSet<MoveFlags> flags) {
 		this.piece = piece;
 		this.start = start;
 		this.end = end;
-		this.flag = flags;
+		this.flags = flags;
 	}
 
 	public Position getStart() {
@@ -25,8 +27,8 @@ public class Move {
 		return end;
 	}
 
-	public MoveFlags getFlag() {
-		return flag;
+	public EnumSet<MoveFlags> getFlags() {
+		return flags;
 	}
 
 	public ChessPiece getPiece() {
@@ -38,7 +40,7 @@ public class Move {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((end == null) ? 0 : end.hashCode());
-		result = prime * result + ((flag == null) ? 0 : flag.hashCode());
+		result = prime * result + ((flags == null) ? 0 : flags.hashCode());
 		result = prime * result + ((piece == null) ? 0 : piece.hashCode());
 		result = prime * result + ((start == null) ? 0 : start.hashCode());
 		return result;
@@ -58,7 +60,7 @@ public class Move {
 				return false;
 		} else if (!end.equals(other.end))
 			return false;
-		if (flag != other.flag)
+		if (!flags.equals(other.flags))
 			return false;
 		if (piece == null) {
 			if (other.piece != null)
@@ -76,7 +78,7 @@ public class Move {
 	@Override
 	public String toString() {
 		return "Move [start=" + start.algebraicPosition() + ", end=" + end.algebraicPosition()
-				+ ", flag=" + flag + ", piece=" + piece + "]";
+				+ ", flag=" + flags + ", piece=" + piece + "]";
 	}
 
 }

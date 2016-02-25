@@ -4,11 +4,19 @@ import java.util.HashMap;
 
 public class ChessBoard {
 
-	private final HashMap<Position, ChessPiece> white, black;
+	private final HashMap<Position, ChessPiece>	white, black;
+
+	// Key:
+	// hashMoved[a][b]
+	// a: [0 - white, 1 - black]
+	// b: [0 - king, 1 - kingside rook, 2 - queensize rook]
+	private final boolean[][]					hasMoved;
 
 	public ChessBoard() {
 		this.white = new HashMap<Position, ChessPiece>();
 		this.black = new HashMap<Position, ChessPiece>();
+
+		this.hasMoved = new boolean[2][3];
 
 		for (int file = 1; file <= 8; file++) {
 			white.put(new Position(file, 2), new ChessPiece(ChessColor.WHITE, Piece.PAWN));
@@ -35,13 +43,11 @@ public class ChessBoard {
 	}
 
 	public ChessPiece getPiece(ChessColor color, Position pos) {
-		switch (color) {
-			case BLACK:
-				return black.get(pos);
-			case WHITE:
-				return white.get(pos);
+		if (color.equals(ChessColor.BLACK)) {
+			return black.get(pos);
+		} else {
+			return white.get(pos);
 		}
-		return null;
 	}
 
 	public ChessPiece getPiece(Position pos) {
@@ -50,6 +56,26 @@ public class ChessBoard {
 
 	public boolean isEmpty(Position pos) {
 		return !white.containsKey(pos) && !black.containsKey(pos);
+	}
+
+	public boolean isFileRangeEmpty(int fileStart, int fileEnd, int rank) {
+		for (int file = fileStart; file <= fileEnd; file++) {
+			if (Position.isValidPosition(file, rank) && !isEmpty(new Position(file, rank))) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	public boolean isRankRangeEmpty(int file, int rankStart, int rankEnd) {
+		for (int rank = rankStart; rank <= rankEnd; rank++) {
+			if (Position.isValidPosition(file, rank) && !isEmpty(new Position(file, rank))) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	public boolean isWhite(Position pos) {
@@ -61,12 +87,55 @@ public class ChessBoard {
 	}
 
 	public boolean isColor(ChessColor color, Position pos) {
-		switch (color) {
-			case BLACK:
-				return isBlack(pos);
-			case WHITE:
-				return isWhite(pos);
+		if (color.equals(ChessColor.BLACK)) {
+			return isBlack(pos);
+		} else {
+			return isWhite(pos);
 		}
-		return false;
+	}
+
+	public HashMap<Position, ChessPiece> getPiecesByColor(ChessColor color) {
+		if (color.equals(ChessColor.BLACK)) {
+			return black;
+		} else {
+			return white;
+		}
+	}
+
+	public boolean hasKingMoved(ChessColor color) {
+		return hasMoved[color.getID()][0];
+	}
+
+	public boolean hasKingsideRookMoved(ChessColor color) {
+		return hasMoved[color.getID()][1];
+	}
+
+	public boolean hasQueensideRookMoved(ChessColor color) {
+		return hasMoved[color.getID()][2];
+	}
+
+	// TODO Implement board update
+	public void updateWith(Move move) {
+
+	}
+	
+	public static boolean checkTabooFileRange(boolean[][] taboo, int fileStart, int fileEnd, int rank) {
+		for (int file = fileStart; file <= fileEnd; file++) {
+			if (Position.isValidPosition(file, rank) && !taboo[file][rank]) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+	
+	public static boolean checkTabooRankRange(boolean[][] taboo, int file, int rankStart, int rankEnd) {
+		for (int rank = rankStart; rank <= rankEnd; rank++) {
+			if (Position.isValidPosition(file, rank) && !taboo[file][rank]) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 }

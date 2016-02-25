@@ -1,23 +1,22 @@
 package game;
 
-import java.io.File;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 
-import gui.ChessSerializable;
-
-@SuppressWarnings("serial")
 public class ChessGame {
 
 	// board[file][rank]
-	private final ChessBoard			board		= new ChessBoard();
-	private final boolean[][]			tabooBoard	= new boolean[8][8];
+	private final ChessBoard		board		= new ChessBoard();
 
-	private final ArrayDeque<Move>		history		= new ArrayDeque<Move>();
-	private final ArrayList<ChessPiece>	taken		= new ArrayList<ChessPiece>();
+	private final ArrayDeque<Move>	history		= new ArrayDeque<Move>();
 
-	private String						name;
-	private File						save;
+	private String					name;
+
+	private ChessColor				turnToggle	= ChessColor.WHITE;			// True
+																			// =
+																			// white,
+																			// false
+																			// =
+																			// black
 
 	public ChessGame(String name) {
 		this.name = name;
@@ -27,7 +26,6 @@ public class ChessGame {
 		return history;
 	}
 
-	@Override
 	public String getName() {
 		return name;
 	}
@@ -41,8 +39,16 @@ public class ChessGame {
 		return "ChessGame [name=" + name + "]";
 	}
 
+	// Update board repr
+	// Add to history
+	// Check for check or win
 	public void updateWith(Move move) {
+		if (move.getPiece().getColor() != turnToggle) {
+			throw new IllegalArgumentException(
+					"The Move passed indicates that a Played moved out of turn. It is the "
+							+ turnToggle + " player's turn.");
+		}
 		board.updateWith(move);
-		this.tabooBoard = MoveGeneration.generateTabooBoard
+		history.add(move);
 	}
 }
