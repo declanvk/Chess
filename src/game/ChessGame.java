@@ -5,18 +5,11 @@ import java.util.ArrayDeque;
 public class ChessGame {
 
 	// board[file][rank]
-	private final ChessBoard		board		= new ChessBoard();
+	private final ChessBoard			board		= new ChessBoard();
+	private final ArrayDeque<Move>		history		= new ArrayDeque<Move>();
 
-	private final ArrayDeque<Move>	history		= new ArrayDeque<Move>();
-
-	private String					name;
-
-	private ChessColor				turnToggle	= ChessColor.WHITE;			// True
-																			// =
-																			// white,
-																			// false
-																			// =
-																			// black
+	private String						name;
+	private ChessColor					turnToggle	= ChessColor.WHITE;
 
 	public ChessGame(String name) {
 		this.name = name;

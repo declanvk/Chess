@@ -49,7 +49,8 @@ public class MoveGeneration {
 		} else {
 			Position newPos = new Position(rank, file);
 			EnumSet<MoveFlags> flags = EnumSet.noneOf(MoveFlags.class);
-			if (piece.getType().equals(Piece.PAWN) && piece.getColor().opposite().getHomeRank() == rank) {
+			if (piece.getType().equals(Piece.PAWN)
+					&& piece.getColor().opposite().getHomeRank() == rank) {
 				flags.add(MoveFlags.PROMOTION);
 			}
 
@@ -99,8 +100,9 @@ public class MoveGeneration {
 			}
 		}
 
-		if (!board.hasKingMoved(piece.getColor())) {
-			if (!board.hasKingsideRookMoved(piece.getColor())
+		if (!board.hasPieceMoved(new Position(5, piece.getColor().getHomeRank()), piece)) {
+			if (!board.hasPieceMoved(new Position(8, piece.getColor().getHomeRank()),
+					new ChessPiece(piece.getColor(), Piece.ROOK))
 					&& board.isFileRangeEmpty(pos.getFile() - 1, pos.getFile() - 3,
 							piece.getColor().getHomeRank())
 					&& ChessBoard.checkTabooFileRange(taboo, pos.getFile() - 1, pos.getFile() - 3,
@@ -110,7 +112,8 @@ public class MoveGeneration {
 						EnumSet.of(MoveFlags.CASTLE)));
 			}
 
-			if (!board.hasQueensideRookMoved(piece.getColor())
+			if (!board.hasPieceMoved(new Position(1, piece.getColor().getHomeRank()),
+					new ChessPiece(piece.getColor(), Piece.ROOK))
 					&& board.isFileRangeEmpty(pos.getFile() + 1, pos.getFile() + 2,
 							piece.getColor().getHomeRank())
 					&& ChessBoard.checkTabooFileRange(taboo, pos.getFile() + 1, pos.getFile() + 2,

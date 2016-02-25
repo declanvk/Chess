@@ -1,50 +1,57 @@
 package game;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import game.Move.MoveFlags;
 
 public class ChessBoard {
-
-	private final HashMap<Position, ChessPiece>	white, black;
-	private final ArrayList<ChessPiece>			taken;
-
-	// Key:
-	// hashMoved[a][b]
-	// a: [0 - white, 1 - black]
-	// b: [0 - king, 1 - kingside rook, 2 - queensize rook]
-	private final boolean[][]					hasMoved;
-
-	public ChessBoard() {
-		this.white = new HashMap<Position, ChessPiece>();
-		this.black = new HashMap<Position, ChessPiece>();
-
-		this.hasMoved = new boolean[2][3];
-		this.taken = new ArrayList<ChessPiece>();
-
+	
+	private static final HashMap<Position, ChessPiece> initialWhite, initialBlack;
+	static {
+		HashMap<Position, ChessPiece> tempWhite = new HashMap<Position, ChessPiece>();
+		HashMap<Position, ChessPiece> tempBlack = new HashMap<Position, ChessPiece>();
+		
 		for (int file = 1; file <= 8; file++) {
-			white.put(new Position(file, 2), new ChessPiece(ChessColor.WHITE, Piece.PAWN));
-			black.put(new Position(file, 7), new ChessPiece(ChessColor.BLACK, Piece.PAWN));
-		}
+            tempWhite.put(new Position(file, 2), new ChessPiece(ChessColor.WHITE, Piece.PAWN));
+            tempBlack.put(new Position(file, 7), new ChessPiece(ChessColor.BLACK, Piece.PAWN));
+        }
 
-		black.put(new Position(1, 8), new ChessPiece(ChessColor.BLACK, Piece.ROOK));
-		black.put(new Position(2, 8), new ChessPiece(ChessColor.BLACK, Piece.KNIGHT));
-		black.put(new Position(3, 8), new ChessPiece(ChessColor.BLACK, Piece.BISHOP));
-		black.put(new Position(4, 8), new ChessPiece(ChessColor.BLACK, Piece.QUEEN));
-		black.put(new Position(5, 8), new ChessPiece(ChessColor.BLACK, Piece.KING));
-		black.put(new Position(6, 8), new ChessPiece(ChessColor.BLACK, Piece.BISHOP));
-		black.put(new Position(7, 8), new ChessPiece(ChessColor.BLACK, Piece.KNIGHT));
-		black.put(new Position(8, 8), new ChessPiece(ChessColor.BLACK, Piece.ROOK));
+        tempBlack.put(new Position(1, 8), new ChessPiece(ChessColor.BLACK, Piece.ROOK));
+        tempBlack.put(new Position(2, 8), new ChessPiece(ChessColor.BLACK, Piece.KNIGHT));
+        tempBlack.put(new Position(3, 8), new ChessPiece(ChessColor.BLACK, Piece.BISHOP));
+        tempBlack.put(new Position(4, 8), new ChessPiece(ChessColor.BLACK, Piece.QUEEN));
+        tempBlack.put(new Position(5, 8), new ChessPiece(ChessColor.BLACK, Piece.KING));
+        tempBlack.put(new Position(6, 8), new ChessPiece(ChessColor.BLACK, Piece.BISHOP));
+        tempBlack.put(new Position(7, 8), new ChessPiece(ChessColor.BLACK, Piece.KNIGHT));
+        tempBlack.put(new Position(8, 8), new ChessPiece(ChessColor.BLACK, Piece.ROOK));
 
-		white.put(new Position(1, 1), new ChessPiece(ChessColor.WHITE, Piece.ROOK));
-		white.put(new Position(2, 1), new ChessPiece(ChessColor.WHITE, Piece.KNIGHT));
-		white.put(new Position(3, 1), new ChessPiece(ChessColor.WHITE, Piece.BISHOP));
-		white.put(new Position(4, 1), new ChessPiece(ChessColor.WHITE, Piece.QUEEN));
-		white.put(new Position(5, 1), new ChessPiece(ChessColor.WHITE, Piece.KING));
-		white.put(new Position(6, 1), new ChessPiece(ChessColor.WHITE, Piece.BISHOP));
-		white.put(new Position(7, 1), new ChessPiece(ChessColor.WHITE, Piece.KNIGHT));
-		white.put(new Position(8, 1), new ChessPiece(ChessColor.WHITE, Piece.ROOK));
+        tempWhite.put(new Position(1, 1), new ChessPiece(ChessColor.WHITE, Piece.ROOK));
+        tempWhite.put(new Position(2, 1), new ChessPiece(ChessColor.WHITE, Piece.KNIGHT));
+        tempWhite.put(new Position(3, 1), new ChessPiece(ChessColor.WHITE, Piece.BISHOP));
+        tempWhite.put(new Position(4, 1), new ChessPiece(ChessColor.WHITE, Piece.QUEEN));
+        tempWhite.put(new Position(5, 1), new ChessPiece(ChessColor.WHITE, Piece.KING));
+        tempWhite.put(new Position(6, 1), new ChessPiece(ChessColor.WHITE, Piece.BISHOP));
+        tempWhite.put(new Position(7, 1), new ChessPiece(ChessColor.WHITE, Piece.KNIGHT));
+        tempWhite.put(new Position(8, 1), new ChessPiece(ChessColor.WHITE, Piece.ROOK));
+		
+		initialWhite = (HashMap<Position, ChessPiece>) Collections.unmodifiableMap(tempWhite);
+		initialBlack = (HashMap<Position, ChessPiece>) Collections.unmodifiableMap(tempBlack);
+	}
+
+	private final HashMap<Position, ChessPiece>			white, black;
+	private final HashSet<Pair<Position, ChessPiece>>	hasMoved;
+	private final ArrayList<ChessPiece>					taken;
+
+	@SuppressWarnings("unchecked")
+	public ChessBoard() {
+		this.white = (HashMap<Position, ChessPiece>) initialWhite.clone();
+		this.black = (HashMap<Position, ChessPiece>) initialBlack.clone();
+		this.hasMoved = new HashSet<Pair<Position, ChessPiece>>();
+
+		this.taken = new ArrayList<ChessPiece>();
 	}
 
 	public ChessPiece getPiece(ChessColor color, Position pos) {
@@ -107,21 +114,15 @@ public class ChessBoard {
 		}
 	}
 
-	public boolean hasKingMoved(ChessColor color) {
-		return hasMoved[color.getID()][0];
-	}
-
-	public boolean hasKingsideRookMoved(ChessColor color) {
-		return hasMoved[color.getID()][1];
-	}
-
-	public boolean hasQueensideRookMoved(ChessColor color) {
-		return hasMoved[color.getID()][2];
+	public boolean hasPieceMoved(Position pos, ChessPiece piece) {
+		return hasMoved.contains(new Pair<Position, ChessPiece>(pos, piece));
 	}
 
 	// TODO Implement a way to include choices for the promotion
 	public void updateWith(Move move) {
 		HashMap<Position, ChessPiece> pieces = getPiecesByColor(move.getPiece().getColor());
+
+		hasMoved.add(new Pair<Position, ChessPiece>(move.getStart(), move.getPiece()));
 		pieces.remove(move.getStart());
 		ChessPiece previousOccupant = null;
 		if (move.getFlags().contains(MoveFlags.PROMOTION)) {
@@ -147,7 +148,7 @@ public class ChessBoard {
 			Position oldCastlePosition = new Position(rookFile, move.getEnd().getRank());
 			Position newCastlePosition = new Position(move.getEnd().getFile() - sign,
 					move.getEnd().getRank());
-			
+
 			pieces.put(newCastlePosition, pieces.remove(oldCastlePosition));
 		}
 	}
@@ -170,5 +171,69 @@ public class ChessBoard {
 		}
 
 		return true;
+	}
+	
+	public HashMap<Position, ChessPiece> returnInitialWhitePositions() {
+		return initialWhite;
+	}
+	
+	public HashMap<Position, ChessPiece> returnInitialBlackPositions() {
+		return initialBlack;
+	}
+
+	public final class Pair<A, B> {
+		private final A	first;
+		private final B	second;
+
+		public Pair(A first, B second) {
+			this.first = first;
+			this.second = second;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + getOuterType().hashCode();
+			result = prime * result + ((first == null) ? 0 : first.hashCode());
+			result = prime * result + ((second == null) ? 0 : second.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Pair<?, ?> other = (Pair<?, ?>) obj;
+			if (!getOuterType().equals(other.getOuterType()))
+				return false;
+			if (first == null) {
+				if (other.first != null)
+					return false;
+			} else if (!first.equals(other.first))
+				return false;
+			if (second == null) {
+				if (other.second != null)
+					return false;
+			} else if (!second.equals(other.second))
+				return false;
+			return true;
+		}
+
+		private ChessBoard getOuterType() {
+			return ChessBoard.this;
+		}
+
+		public A first() {
+			return first;
+		}
+
+		public B second() {
+			return second;
+		}
 	}
 }
