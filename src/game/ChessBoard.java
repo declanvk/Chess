@@ -1,10 +1,14 @@
 package game;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+
+import game.Move.MoveFlags;
 
 public class ChessBoard {
 
 	private final HashMap<Position, ChessPiece>	white, black;
+	private final ArrayList<ChessPiece>			taken;
 
 	// Key:
 	// hashMoved[a][b]
@@ -17,6 +21,7 @@ public class ChessBoard {
 		this.black = new HashMap<Position, ChessPiece>();
 
 		this.hasMoved = new boolean[2][3];
+		this.taken = new ArrayList<ChessPiece>();
 
 		for (int file = 1; file <= 8; file++) {
 			white.put(new Position(file, 2), new ChessPiece(ChessColor.WHITE, Piece.PAWN));
@@ -114,11 +119,39 @@ public class ChessBoard {
 		return hasMoved[color.getID()][2];
 	}
 
-	// TODO Implement board update
+	// TODO Implement a way to include choices for the promotion
 	public void updateWith(Move move) {
+		HashMap<Position, ChessPiece> pieces = getPiecesByColor(move.getPiece().getColor());
+		pieces.remove(move.getStart());
+		ChessPiece previousOccupant = null;
+		if (move.getFlags().contains(MoveFlags.PROMOTION)) {
+			previousOccupant = pieces.put(move.getEnd(),
+					new ChessPiece(move.getPiece().getColor(), Piece.QUEEN));
+		} else {
+			previousOccupant = pieces.put(move.getEnd(), move.getPiece());
+		}
 
+		if (previousOccupant != null) {
+			taken.add(previousOccupant);
+		}
+
+		if (move.getFlags().contains(MoveFlags.EN_PASSANT)) {
+			Position enPassantPawn = new Position(move.getEnd().getFile(),
+					move.getEnd().getRank() - move.getPiece().getColor().getForwardDirection());
+			taken.add(pieces.remove(enPassantPawn));
+		}
+
+		if (move.getFlags().contains(MoveFlags.CASTLE)) {
+			int sign = Integer.signum(move.getEnd().getFile() - move.getStart().getFile());
+			int rookFile = (sign > 0) ? 8 : 1;
+			Position oldCastlePosition = new Position(rookFile, move.getEnd().getRank());
+			Position newCastlePosition = new Position(move.getEnd().getFile() - sign,
+					move.getEnd().getRank());
+			
+			pieces.put(newCastlePosition, pieces.remove(oldCastlePosition));
+		}
 	}
-	
+
 	public static boolean checkTabooFileRange(boolean[][] taboo, int fileStart, int fileEnd, int rank) {
 		for (int file = fileStart; file <= fileEnd; file++) {
 			if (Position.isValidPosition(file, rank) && !taboo[file][rank]) {
@@ -128,7 +161,7 @@ public class ChessBoard {
 
 		return true;
 	}
-	
+
 	public static boolean checkTabooRankRange(boolean[][] taboo, int file, int rankStart, int rankEnd) {
 		for (int rank = rankStart; rank <= rankEnd; rank++) {
 			if (Position.isValidPosition(file, rank) && !taboo[file][rank]) {

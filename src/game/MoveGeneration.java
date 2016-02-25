@@ -49,7 +49,7 @@ public class MoveGeneration {
 		} else {
 			Position newPos = new Position(rank, file);
 			EnumSet<MoveFlags> flags = EnumSet.noneOf(MoveFlags.class);
-			if (piece.getColor().getHomeRank() == rank) {
+			if (piece.getType().equals(Piece.PAWN) && piece.getColor().opposite().getHomeRank() == rank) {
 				flags.add(MoveFlags.PROMOTION);
 			}
 
