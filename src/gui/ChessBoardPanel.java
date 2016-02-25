@@ -60,16 +60,18 @@ public class ChessBoardPanel extends JPanel {
 	}
 
 	private void initializeBoxes(Rectangle[][] boxes, HashMap<Rectangle, Position> map) {
-		int x = marginSize;
-		int y = marginSize;
+		Dimension canvasSize = this.getPreferredSize();
 		Dimension boxSize = new Dimension(cellSize, cellSize);
-		for (int file = 0; file < boxes.length; file++) {
-			for (int rank = 0; rank < boxes[file].length; rank++) {
+		int x = marginSize;
+		int y =  canvasSize.height - (marginSize + (int) boxSize.getHeight());
+		
+		for(int rank = 0; rank < boxes.length; rank++) {
+			for(int file = 0; file < boxes[rank].length; file++) {
 				boxes[file][rank] = new Rectangle(new Point(x, y), boxSize);
-				map.put(boxes[file][rank], new Position(file + 1, rank + 1));
-				x += cellSize + (rank != boxes[file].length - 1 ? borderSize : 0);
+				map.put(boxes[file][rank], new Position(rank + 1, file + 1));
+				x += cellSize + (file != boxes[rank].length - 1 ? borderSize : 0);
 			}
-			y += cellSize + (file != boxes.length - 1 ? borderSize : 0);
+			y -= cellSize + (rank != boxes.length - 1 ? borderSize : 0);
 			x = marginSize;
 		}
 	}
@@ -116,7 +118,7 @@ public class ChessBoardPanel extends JPanel {
 	private void drawBoxes(Graphics2D g2) {
 		for (int file = 0; file < boxes.length; file++) {
 			for (int rank = 0; rank < boxes[file].length; rank++) {
-				if ((rank + (1 + file) % 2) % 2 == 0) {
+				if ((rank + (file) % 2) % 2 == 0) {
 					g2.setColor(dark);
 				} else {
 					g2.setColor(light);
