@@ -1,34 +1,27 @@
 package gui;
 
-import javax.swing.JPanel;
-import javax.swing.SwingWorker;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.ArrayDeque;
 
-import game.ChessColor;
-import game.Move;
+import core.ChessColor;
+import core.Move;
 
 public abstract class Player<I> {
-	
-	private final String name;
-	private final ChessColor color;
-	private final I inputMethod;
-	
-	public Player(String name, ChessColor color, I input) {
+
+	private final PropertyChangeSupport			mPcs		= new PropertyChangeSupport(this);
+	private final ArrayDeque<Move>				movesMade	= new ArrayDeque<Move>();
+
+	protected final String						name;
+	protected final ChessColor					color;
+
+	protected I									input;
+
+	public Player(String name, ChessColor color) {
 		this.name = name;
 		this.color = color;
-		this.inputMethod = input;
 	}
-	
-	//Update a player's internal representation of the board.
-	//A player doesn't necessarily need to maintain a representation
-	public abstract void updateWith(Move m);
-	
-	//The idea behind this is that calling this will
-	//return the Player's next choice of Move. However
-	//This call will block if called by GUI rendering thread
-	//Possible solution is to call this method in a new Thread
-	//And give it the resources to update the main board representation
-	public abstract SwingWorker<Move, Integer> getMove(JPanel board);
-	
+
 	public String getName() {
 		return name;
 	}
@@ -36,8 +29,39 @@ public abstract class Player<I> {
 	public ChessColor getColor() {
 		return color;
 	}
-	
-	public I getInputMethod() {
-		return inputMethod;
+
+	public void addMoveListener(PropertyChangeListener listener) {
+		System.out.println("Adding listener to " + this.name);
+		mPcs.addPropertyChangeListener(listener);
 	}
+
+	public void removeMoveListener(PropertyChangeListener listener) {
+		System.out.println("Removing listener from " + this.name);
+		mPcs.removePropertyChangeListener(listener);
+	}
+
+	public void startTurn(I input) {
+		System.out.println("Starting " + this.name + "'s turn");
+		this.input = input;
+		this.startTurnProtected();
+	}
+
+	public void endTurn() {
+		this.endTurnProtected();
+		this.input = null;
+		System.out.println("Ending " + this.name + "'s turn");
+	}
+
+	protected void submitMove(Move m) {
+		System.out.println("Submitting " + this.name + "'s move");
+		mPcs.firePropertyChange("move", movesMade.peekLast(), m);
+		movesMade.add(m);
+		this.endTurn();
+	}
+
+	public abstract void updateWith(Move m);
+
+	protected abstract void startTurnProtected();
+
+	protected abstract void endTurnProtected();
 }

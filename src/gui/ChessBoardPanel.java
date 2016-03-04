@@ -8,27 +8,25 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.swing.JPanel;
 
-import game.ChessGame;
-import game.ChessPiece;
-import game.Position;
+import core.ChessGame;
+import core.ChessPiece;
+import core.Position;
 
 @SuppressWarnings("serial")
 public class ChessBoardPanel extends JPanel {
 
 	private final String						name;
-
+	
 	private final ChessGame						game;
-	private final Player						whitePlayer, blackPlayer;
-	private Player								currentPlayer;
+	
+	private final HashMap<Position, Color> positionsToColor;
 
-	// Input map Rectangle to Position
-	private final HashMap<Rectangle, Position>	rectangleToPosition;
-
-	// Dimensions for drawing
+	// Rendering values
 	private static final int					cellSize		= 60;
 	private static final int					dx				= 10;
 	private static final int					dy				= 40;
@@ -47,49 +45,29 @@ public class ChessBoardPanel extends JPanel {
 	private final Color							dark			= Color.DARK_GRAY;
 	private final Color							light			= Color.LIGHT_GRAY;
 
-	public ChessBoardPanel(String name, Player white, Player black) {
+	public ChessBoardPanel(String name, ChessGame game) {
 		this.name = name;
-		this.game = new ChessGame(name);
-		this.whitePlayer = white;
-		this.blackPlayer = black;
-		this.currentPlayer = this.whitePlayer;
+		this.game = game;
 		this.boxes = new Rectangle[boxLength][boxLength];
-		this.rectangleToPosition = new HashMap<>();
-
-		initializeBoxes(this.boxes, this.rectangleToPosition);
+		this.positionsToColor = new HashMap<>();
+		
+		initializeBoxes(this.boxes);
 	}
 
-	private void initializeBoxes(Rectangle[][] boxes, HashMap<Rectangle, Position> map) {
+	private void initializeBoxes(Rectangle[][] boxes) {
 		Dimension canvasSize = this.getPreferredSize();
 		Dimension boxSize = new Dimension(cellSize, cellSize);
 		int x = marginSize;
-		int y =  canvasSize.height - (marginSize + (int) boxSize.getHeight());
-		
-		for(int rank = 0; rank < boxes.length; rank++) {
-			for(int file = 0; file < boxes[rank].length; file++) {
+		int y = canvasSize.height - (marginSize + (int) boxSize.getHeight());
+
+		for (int rank = 0; rank < boxes.length; rank++) {
+			for (int file = 0; file < boxes[rank].length; file++) {
 				boxes[file][rank] = new Rectangle(new Point(x, y), boxSize);
-				map.put(boxes[file][rank], new Position(rank + 1, file + 1));
 				x += cellSize + (file != boxes[rank].length - 1 ? borderSize : 0);
 			}
 			y -= cellSize + (rank != boxes.length - 1 ? borderSize : 0);
 			x = marginSize;
 		}
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public Player getCurrentPlayer() {
-		return currentPlayer;
-	}
-
-	public Player getWhitePlayer() {
-		return whitePlayer;
-	}
-
-	public Player getBlackPlayer() {
-		return blackPlayer;
 	}
 
 	@Override
@@ -116,15 +94,41 @@ public class ChessBoardPanel extends JPanel {
 	}
 
 	private void drawBoxes(Graphics2D g2) {
+		Color boxColor = light;
+		Position boxPosition = null;
 		for (int file = 0; file < boxes.length; file++) {
 			for (int rank = 0; rank < boxes[file].length; rank++) {
-				if ((rank + (file) % 2) % 2 == 0) {
-					g2.setColor(dark);
+				boxPosition = new Position(file + 1, rank + 1);
+				boxColor = (rank + (file + 1) % 2) % 2 == 0 ? light : dark;
+				
+				if(positionsToColor.containsKey(boxPosition)) {
+					g2.setColor(blendColor(boxColor, positionsToColor.get(boxPosition)));
 				} else {
-					g2.setColor(light);
+					g2.setColor(boxColor);
 				}
-
+				
 				g2.fill(boxes[file][rank]);
+			}
+		}
+	}
+
+	private void drawContents(Graphics2D g2) {
+		int x = 0, y = 0;
+		String content = null;
+		ChessPiece piece = null;
+		Position boxPosition = null;
+		for (int file = 0; file < boxes.length; file++) {
+			for (int rank = 0; rank < boxes[file].length; rank++) {
+				boxPosition = new Position(file + 1, rank + 1);
+				
+				x = boxes[file][rank].x + dx;
+				y = boxes[file][rank].y + dy;
+				piece = game.getPiece(boxPosition);
+				if (piece != null) {
+					content = piece.getUnicode();
+					g2.setColor(piece.getColor().getDrawColor());
+					g2.drawString(content, x, y);
+				}
 			}
 		}
 	}
@@ -145,23 +149,38 @@ public class ChessBoardPanel extends JPanel {
 			rank_y -= cellSize + borderSize;
 		}
 	}
-
-	private void drawContents(Graphics2D g2) {
-		int x = 0, y = 0;
-		String content = null;
-		ChessPiece piece = null;
-		for (int file = 0; file < boxes.length; file++) {
-			for (int rank = 0; rank < boxes[file].length; rank++) {
-				x = boxes[file][rank].x + dx;
-				y = boxes[file][rank].y + dy;
-				piece = game.getPiece(new Position(file + 1, rank + 1));
-				if (piece != null) {
-					content = piece.getUnicode();
-					g2.setColor(piece.getColor().getDrawColor());
-					g2.drawString(content, x, y);
-				}
-			}
+	
+	private Color blendColor(Color ca, Color cb) {
+		double totalAlpha = ca.getAlpha() + cb.getAlpha();
+		double aWeight = ca.getAlpha() / totalAlpha;
+		double bWeight = cb.getAlpha() / totalAlpha;
+		
+		double r = (aWeight * ca.getRed()) + (bWeight * cb.getRed());
+		double g = (aWeight * ca.getGreen()) + (bWeight * cb.getGreen());
+		double b = (aWeight * ca.getBlue()) + (bWeight * cb.getBlue());;
+		double a = Math.max(ca.getAlpha(), cb.getAlpha());
+		
+		return new Color((int) r,(int) g, (int) b, (int) a);
+	}
+	
+	public Position getPositionContaining(Point p) {
+		int x = p.x - marginSize, y = p.y - marginSize;
+		int l = cellSize * 8 + borderSize * 7;
+		if(x > 0 || x < l || y > 0 || y < l) {
+			return new Position((x / (cellSize + borderSize) + 1), ((l - y) / (cellSize + borderSize) + 1));
+		} else {
+			return null;
 		}
+	}
+	
+	void addColorPositions(ArrayList<Position> positions, Color color) {
+		for(Position p: positions) {
+			positionsToColor.put(p, color);
+		}
+	}
+	
+	void clearColorPositions() {
+		positionsToColor.clear();
 	}
 
 	@Override
@@ -173,5 +192,8 @@ public class ChessBoardPanel extends JPanel {
 	@Override
 	public String toString() {
 		return game.getName() + " Board";
+	}
+	public String getName() {
+		return name;
 	}
 }
