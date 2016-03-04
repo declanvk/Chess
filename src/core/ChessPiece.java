@@ -1,11 +1,11 @@
-package game;
+package core;
 
 public class ChessPiece {
 	
 	private final ChessColor color;
-	private final Piece type;
+	private final PieceType type;
 	
-	public ChessPiece(ChessColor color, Piece type) {
+	public ChessPiece(ChessColor color, PieceType type) {
 		this.color = color;
 		this.type = type;
 	}
@@ -18,7 +18,7 @@ public class ChessPiece {
 		return color;
 	}
 
-	public Piece getType() {
+	public PieceType getType() {
 		return type;
 	}
 	

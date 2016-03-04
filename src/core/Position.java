@@ -1,4 +1,4 @@
-package game;
+package core;
 
 public class Position {
 
@@ -82,12 +82,12 @@ public class Position {
         return true;
     }
 
-    @Override
-    public String toString() {
+    public String toVerboseString() {
         return "Position [rank=" + rank + ", file=" + file + "]";
     }
 
-    public String algebraicPosition() {
+    @Override
+    public String toString() {
         return ((char) ('a' + (file - 1))) + "" + rank;
     }
 }

@@ -1,6 +1,6 @@
-package game;
+package core;
 
-public enum Piece {
+public enum PieceType {
 	PAWN(1, "pawn", "\u2659", "\u265F"),
 	KNIGHT(3, "knight", "\u2658", "\u265E"),
 	BISHOP(3, "bishop", "\u2657", "\u265D"),
@@ -13,7 +13,7 @@ public enum Piece {
 	private final String whiteUnicode;
 	private final String blackUnicode;
 	
-	Piece(int val, String name, String white, String black) {
+	PieceType(int val, String name, String white, String black) {
 		this.value = val;
 		this.name = name;
 		this.whiteUnicode = white;

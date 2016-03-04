@@ -1,4 +1,4 @@
-package game;
+package core;
 
 import java.util.EnumSet;
 
@@ -77,7 +77,7 @@ public class Move {
 
 	@Override
 	public String toString() {
-		return "Move [start=" + start.algebraicPosition() + ", end=" + end.algebraicPosition()
+		return "Move [start=" + start + ", end=" + end
 				+ ", flag=" + flags + ", piece=" + piece + "]";
 	}
 
