@@ -2,13 +2,9 @@ package core;
 
 public class Move {
 
-	public enum MoveFlags {
-		QUIET, CAPTURE, PROMOTION, CASTLE, EN_PASSANT, DOUBLE_PAWN_PUSH
-	}
-
-	private final int					start, end;
-	private final int					flags;
-	private final int			piece;
+	private final int	start, end;
+	private final int	flags;
+	private final int	piece;
 
 	public Move(int piece, int start, int end, int flags) {
 		this.piece = piece;
