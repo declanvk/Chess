@@ -4,7 +4,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayDeque;
 
-import core.ChessColor;
 import core.Move;
 
 public abstract class Player<I> {
@@ -13,11 +12,11 @@ public abstract class Player<I> {
 	private final ArrayDeque<Move>				movesMade	= new ArrayDeque<Move>();
 
 	protected final String						name;
-	protected final ChessColor					color;
+	protected final int							color; //0 -> white, 1 -> black
 
 	protected I									input;
 
-	public Player(String name, ChessColor color) {
+	public Player(String name, int color) {
 		this.name = name;
 		this.color = color;
 	}
@@ -26,7 +25,7 @@ public abstract class Player<I> {
 		return name;
 	}
 
-	public ChessColor getColor() {
+	public int getColor() {
 		return color;
 	}
 
