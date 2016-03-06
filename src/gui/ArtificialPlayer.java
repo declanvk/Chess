@@ -1,10 +1,8 @@
 package gui;
 
-import core.ChessColor;
-
 public abstract class ArtificialPlayer extends Player<Void> {
 
-	public ArtificialPlayer(String name, ChessColor color) {
+	public ArtificialPlayer(String name, int color) {
 		super(name, color);
 	}
 	
