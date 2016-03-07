@@ -3,40 +3,42 @@ package core;
 import java.awt.Color;
 
 public enum ChessColor {
-	WHITE("white", Color.WHITE, 1, +1) {@Override public ChessColor opposite() {return BLACK;}},
-	BLACK("black", Color.BLACK, 8, -1) {@Override public ChessColor opposite() {return WHITE;}};
-	
-	private final String name;
-	private final Color color;
-	private final int homeRank;
-	private final int forwardDirection;
-	
-	ChessColor(String name, Color color, int rank, int direction) {
-		this.name = name;
-		this.color = color;
-		this.homeRank = rank;
-		this.forwardDirection = direction;
+	WHITE(Color.WHITE) {
+		@Override
+		public ChessColor opposite() {
+			return BLACK;
+		}
+	},
+	BLACK(Color.BLACK) {
+		@Override
+		public ChessColor opposite() {
+			return WHITE;
+		}
+	};
+
+	private final Color drawColor;
+
+	private ChessColor(Color color) {
+		this.drawColor = color;
 	}
-	
-	public String toString() {
-		return name;
-	}
-	
+
 	public Color getDrawColor() {
-		return color;
-	}
-	
-	public int getHomeRank() {
-		return homeRank;
-	}
-	
-	public int getForwardDirection() {
-		return forwardDirection;
-	}
-	
-	public int getID() {
-		return this.ordinal();
+		return drawColor;
 	}
 	
 	public abstract ChessColor opposite();
+
+	public int value() {
+		return this.ordinal();
+	}
+
+	public static ChessColor from(int color) {
+		assert isValid(color);
+
+		return ChessColor.values()[color];
+	}
+
+	public static boolean isValid(int color) {
+		return color >= WHITE.value() && color <= BLACK.value();
+	}
 }

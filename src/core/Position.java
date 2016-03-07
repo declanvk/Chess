@@ -2,92 +2,79 @@ package core;
 
 public class Position {
 
-    private final int rank;
-    private final int file;
-    
-    public static boolean isValidPosition(int file, int rank) {
-    	return !(rank < 1 || rank > 8 || file < 1 || file > 8);
-    }
+	public static final int		a1				= 0;
+	public static final int		a2				= 0;
+	public static final int		a3				= 0;
+	public static final int		a4				= 0;
+	public static final int		a5				= 0;
+	public static final int		a6				= 0;
+	public static final int		a7				= 0;
+	public static final int		a8				= 0;
 
-    public Position(int file, int rank) {
-        if (rank < 1 || rank > 8 || file < 1 || file > 8) {
-            throw new IllegalArgumentException(
-                    "Rank and/or file must be within the bounds of the game. Rank: " + rank
-                            + ", File: " + file);
-        } else {
-            this.rank = rank;
-            this.file = file;
-        }
-    }
+	public static final int		N				= 16;
+	public static final int		E				= 1;
+	public static final int		S				= -16;
+	public static final int		W				= -1;
+	public static final int		NE				= N + E;
+	public static final int		SE				= S + E;
+	public static final int		SW				= S + W;
+	public static final int		NW				= N + W;
 
-    public int getRank() {
-        return rank;
-    }
+	public static final int[]	mainDirections	= { N, E, S, W };
+	public static final int[]	diagDirections	= { NE, SE, SW, NW };
+	public static final int[]	allDirections	= { N, NE, E, SE, S, SW, W, NW };
 
-    public int getFile() {
-        return file;
-    }
-    
-    public Position flipRank() {
-    	return new Position(file, 8 - rank + 1);
-    }
-    
-    public Position flipFile() {
-    	return new Position(8 - file + 1, rank);
-    }
-    
-    public boolean isAdjacent(Position other) {
-    	int val = Math.max(Math.abs(other.file - this.file), Math.abs(other.rank - this.rank));
-    	return 0 < val && val <= 1;
-    }
-    
-    public boolean isDiagonallyAdjacent(Position other) {
-    	return Math.abs(this.file - other.file) == 1 && Math.abs(this.rank - other.rank) == 1;
-    }
-    
-    public boolean isDirectlyAdjacent(Position other) {
-    	return Math.abs(this.file - other.file) + Math.abs(this.rank - other.rank) == 1;
-    }
-    
-    public boolean isFileAdjacent(Position other) {
-    	return Math.abs(this.file - other.file) == 1 && this.rank == other.rank;
-    }
-    
-    public boolean isRankAdjacent(Position other) {
-    	return Math.abs(this.rank - other.rank) == 1 && this.file == other.file;
-    }
+	public static boolean isValid(int file, int rank) {
+		return !(rank < 1 || rank > 8 || file < 1 || file > 8);
+	}
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + file;
-        result = prime * result + rank;
-        return result;
-    }
+	public static boolean isValid(int position) {
+		return (position & 0x88) == 0;
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        Position other = (Position) obj;
-        if (file != other.file)
-            return false;
-        if (rank != other.rank)
-            return false;
-        return true;
-    }
+	public static int from(int file, int rank) {
+		return rank;
+	}
 
-    public String toVerboseString() {
-        return "Position [rank=" + rank + ", file=" + file + "]";
-    }
+	public static int getRank(int position) {
+		return position >>> 4;
+	}
 
-    @Override
-    public String toString() {
-        return ((char) ('a' + (file - 1))) + "" + rank;
-    }
+	public static int getFile(int position) {
+		return position & 0xF;
+	}
+
+	public static int flipRank(int position) {
+		return Position.from(Position.getFile(position), 8 - Position.getRank(position) + 1);
+	}
+
+	public static int flipFile(int position) {
+		return Position.from(8 - Position.getFile(position) + 1, Position.getRank(position));
+	}
+
+	public static boolean isAdjacent(int pos1, int pos2) {
+		return isAdjacentByOffsets(pos1, pos2, allDirections);
+	}
+
+	public static boolean isDiagonallyAdjacent(int pos1, int pos2) {
+		return isAdjacentByOffsets(pos1, pos2, diagDirections);
+	}
+
+	public static boolean isDirectlyAdjacent(int pos1, int pos2) {
+		return isAdjacentByOffsets(pos1, pos2, mainDirections);
+	}
+
+	private static boolean isAdjacentByOffsets(int pos1, int pos2, int[] offsets) {
+		for (int i : offsets) {
+			if (Position.isValid(i + pos1) && i + pos1 == pos2) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public static String toString(int pos) {
+		return ((char) ('a' + (Position.getFile(pos) - 1))) + "" + Position.getRank(pos);
+	}
 }

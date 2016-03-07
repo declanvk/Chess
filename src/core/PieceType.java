@@ -1,56 +1,39 @@
 package core;
 
 public enum PieceType {
-	PAWN(1, "pawn", "\u2659", "\u265F"),
-	KNIGHT(3, "knight", "\u2658", "\u265E"),
-	BISHOP(3, "bishop", "\u2657", "\u265D"),
-	ROOK(5, "rook", "\u2656", "\u265C"),
-	QUEEN(8, "queen", "\u2655", "\u265B"),
-	KING(Integer.MAX_VALUE, "king", "\u2654", "\u265A");
+	PAWN(100),
+	KNIGHT(325),
+	BISHOP(325),
+	ROOK(500),
+	QUEEN(975),
+	KING(Integer.MAX_VALUE);
 	
-	private final int value;
-	private final String name;
-	private final String whiteUnicode;
-	private final String blackUnicode;
+	private final int score;
 	
-	PieceType(int val, String name, String white, String black) {
-		this.value = val;
-		this.name = name;
-		this.whiteUnicode = white;
-		this.blackUnicode = black;
+	PieceType(int val) {
+		this.score = val;
 	}
 	
-	public int getValue() {
-		return this.value;
+	public int score() {
+		return this.score;
 	}
 	
-	public int getID() {
+	public int value() {
 		return this.ordinal();
 	}
 	
-	/**
-	 * @return the name
-	 */
-	public String getName() {
-		return name;
+	public static boolean isValid(int type) {
+		return PAWN.value() >= type && type <= KING.value();
 	}
-
-	/**
-	 * @return the whiteUnicode
-	 */
-	public String getWhiteUnicode() {
-		return whiteUnicode;
+	
+	public static boolean isValidPromotion(int type) {
+		return KNIGHT.value() >= type && type <= QUEEN.value();
 	}
-
-	/**
-	 * @return the blackUnicode
-	 */
-	public String getBlackUnicode() {
-		return blackUnicode;
+	
+	public static PieceType from(int type) {
+		assert isValid(type);
+		
+		return PieceType.values()[type];
 	}
-
-	@Override
-	public String toString() {
-		return name;
-	}
+	
 }
