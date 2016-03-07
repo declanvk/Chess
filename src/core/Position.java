@@ -3,13 +3,6 @@ package core;
 public class Position {
 
 	public static final int		a1				= 0;
-	public static final int		a2				= 0;
-	public static final int		a3				= 0;
-	public static final int		a4				= 0;
-	public static final int		a5				= 0;
-	public static final int		a6				= 0;
-	public static final int		a7				= 0;
-	public static final int		a8				= 0;
 
 	public static final int		N				= 16;
 	public static final int		E				= 1;
@@ -24,6 +17,9 @@ public class Position {
 	public static final int[]	diagDirections	= { NE, SE, SW, NW };
 	public static final int[]	allDirections	= { N, NE, E, SE, S, SW, W, NW };
 
+	private Position() {
+	}
+
 	public static boolean isValid(int file, int rank) {
 		return !(rank < 1 || rank > 8 || file < 1 || file > 8);
 	}
@@ -33,7 +29,10 @@ public class Position {
 	}
 
 	public static int from(int file, int rank) {
-		return rank;
+		assert 0 <= file && file <= 7;
+		assert 0 <= rank && rank <= 7;
+
+		return 16 * rank + file;
 	}
 
 	public static int getRank(int position) {
@@ -64,9 +63,9 @@ public class Position {
 		return isAdjacentByOffsets(pos1, pos2, mainDirections);
 	}
 
-	private static boolean isAdjacentByOffsets(int pos1, int pos2, int[] offsets) {
-		for (int i : offsets) {
-			if (Position.isValid(i + pos1) && i + pos1 == pos2) {
+	private static boolean isAdjacentByOffsets(int centre, int possiblyAdjacent, int[] offsets) {
+		for (int offset : offsets) {
+			if (Position.isValid(offset + centre) && offset + centre == possiblyAdjacent) {
 				return true;
 			}
 		}

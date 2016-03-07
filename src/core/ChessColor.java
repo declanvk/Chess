@@ -41,4 +41,10 @@ public enum ChessColor {
 	public static boolean isValid(int color) {
 		return color >= WHITE.value() && color <= BLACK.value();
 	}
+	
+	public static int opposite(int color) {
+		assert isValid(color);
+		
+		return ~color;
+	}
 }
