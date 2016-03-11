@@ -1,219 +1,354 @@
 package core;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Arrays;
+import java.util.EnumSet;
 
-import core.Move.MoveFlags;
+import core.Position.File;
+import core.Position.Rank;
 
 public class ChessBoard {
 
-	private final HashMap<Position, ChessPiece>			white, black;
-	private final HashSet<Pair<Position, ChessPiece>>	hasMoved;
-	private final ArrayList<ChessPiece>					taken;
+	private final int[]			board;				// indexed by position
+	private final int[]			materialScore;		// indexed by color;
+	private final Bitboard[][]	pieces;				// Indexed by color and type
+	
+	private final State[]		savedStates;
+	private int stateIndex;
+
+	private int					castlingPermissions;
+	private int					enPassantPosition;
+	private int					activeColor;
+	private int					halfMoveClock;
+	
+	private class State {
+		public final int castlingPermissions;
+		public final int enPassantPosition;
+		public final int halfMoveClock;
+		
+		public State(int castling, int enPassant, int clock) {
+			this.castlingPermissions = castling;
+			this.enPassantPosition = enPassant;
+			this.halfMoveClock = clock;
+		}
+	}
 
 	public ChessBoard() {
-		this.white = new HashMap<Position, ChessPiece>();
-		this.black = new HashMap<Position, ChessPiece>();
-		this.hasMoved = new HashSet<Pair<Position, ChessPiece>>();
-		this.taken = new ArrayList<ChessPiece>();
+		this.board = new int[Position.NUM_TOTAL_VALUES];
+		Arrays.fill(this.board, ChessPiece.NULL_PIECE);
+
+		this.materialScore = new int[ChessColor.values().length];
+		this.pieces = new Bitboard[ChessColor.values().length][PieceType.values().length];
 		
-		for (int file = 1; file <= 8; file++) {
-            white.put(new Position(file, 2), new ChessPiece(ChessColor.WHITE, PieceType.PAWN));
-            black.put(new Position(file, 7), new ChessPiece(ChessColor.BLACK, PieceType.PAWN));
-        }
+		//TODO Implement a standard for this and a class with this as a constant
+		this.savedStates = new State[1024];
+		this.stateIndex = -1;
 
-        black.put(new Position(1, 8), new ChessPiece(ChessColor.BLACK, PieceType.ROOK));
-        black.put(new Position(2, 8), new ChessPiece(ChessColor.BLACK, PieceType.KNIGHT));
-        black.put(new Position(3, 8), new ChessPiece(ChessColor.BLACK, PieceType.BISHOP));
-        black.put(new Position(4, 8), new ChessPiece(ChessColor.BLACK, PieceType.QUEEN));
-        black.put(new Position(5, 8), new ChessPiece(ChessColor.BLACK, PieceType.KING));
-        black.put(new Position(6, 8), new ChessPiece(ChessColor.BLACK, PieceType.BISHOP));
-        black.put(new Position(7, 8), new ChessPiece(ChessColor.BLACK, PieceType.KNIGHT));
-        black.put(new Position(8, 8), new ChessPiece(ChessColor.BLACK, PieceType.ROOK));
-
-        white.put(new Position(1, 1), new ChessPiece(ChessColor.WHITE, PieceType.ROOK));
-        white.put(new Position(2, 1), new ChessPiece(ChessColor.WHITE, PieceType.KNIGHT));
-        white.put(new Position(3, 1), new ChessPiece(ChessColor.WHITE, PieceType.BISHOP));
-        white.put(new Position(4, 1), new ChessPiece(ChessColor.WHITE, PieceType.QUEEN));
-        white.put(new Position(5, 1), new ChessPiece(ChessColor.WHITE, PieceType.KING));
-        white.put(new Position(6, 1), new ChessPiece(ChessColor.WHITE, PieceType.BISHOP));
-        white.put(new Position(7, 1), new ChessPiece(ChessColor.WHITE, PieceType.KNIGHT));
-        white.put(new Position(8, 1), new ChessPiece(ChessColor.WHITE, PieceType.ROOK));
+		this.castlingPermissions = CastlingBitFlags.NO_CASTLING;
+		this.enPassantPosition = Position.NULL_POSITION;
+		this.activeColor = ChessColor.WHITE.value();
+		this.halfMoveClock = 0;
 	}
 
-	public ChessPiece getPiece(ChessColor color, Position pos) {
-		if (color.equals(ChessColor.BLACK)) {
-			return black.get(pos);
-		} else {
-			return white.get(pos);
-		}
+	public int getCastling() {
+		return castlingPermissions;
 	}
 
-	public ChessPiece getPiece(Position pos) {
-		return (white.containsKey(pos) ? white.get(pos) : black.get(pos));
+	public int getEnPassantPosition() {
+		return enPassantPosition;
 	}
 
-	public boolean isEmpty(Position pos) {
-		return !white.containsKey(pos) && !black.containsKey(pos);
+	public int getActiveColor() {
+		return activeColor;
 	}
 
-	public boolean isFileRangeEmpty(int fileStart, int fileEnd, int rank) {
-		for (int file = fileStart; file <= fileEnd; file++) {
-			if (Position.isValidPosition(file, rank) && !isEmpty(new Position(file, rank))) {
-				return false;
+	public int getHalfTurnClock() {
+		return halfMoveClock;
+	}
+
+	public int getScore(int color) {
+		assert ChessColor.isValid(color);
+
+		return materialScore[color];
+	}
+
+	public ChessPiece get(int position) {
+		assert Position.isValid(position);
+
+		int piece = board[position];
+
+		return (piece != ChessPiece.NULL_PIECE) ? ChessPiece.from(piece) : null;
+	}
+
+	public int getRaw(int position) {
+		assert Position.isValid(position);
+
+		return board[position];
+	}
+
+	private void set(int position, int piece) {
+		assert Position.isValid(position);
+		assert ChessPiece.isValid(piece);
+		assert isEmpty(position);
+
+		materialScore[ChessPiece.getColor(piece)] -= ChessPiece.getScore(piece);
+		pieces[ChessPiece.getColor(piece)][ChessPiece.getPieceType(piece)].set(position);
+
+		board[position] = piece;
+	}
+
+	private int clear(int position) {
+		assert Position.isValid(position);
+
+		int oldPiece = board[position];
+		materialScore[ChessPiece.getColor(oldPiece)] -= ChessPiece.getScore(oldPiece);
+		pieces[ChessPiece.getColor(oldPiece)][ChessPiece.getPieceType(oldPiece)].clear(position);
+
+		board[position] = ChessPiece.NULL_PIECE;
+
+		return oldPiece;
+	}
+
+	public boolean isEmpty(int position) {
+		assert Position.isValid(position);
+
+		return board[position] == ChessPiece.NULL_PIECE;
+	}
+
+	public void move(int move) {
+		assert Move.isValid(move);
+
+		int startPos = Move.getStartPosition(move);
+		int endPos = Move.getEndPosition(move);
+		int startPiece = Move.getStartPiece(move);
+		int endPiece = Move.getEndPiece(move);
+		int moveType = Move.getFlags(move);
+		int promotionPieceType = Move.getPromotionPieceType(move);
+
+		move(startPos, endPos, startPiece, ChessPiece.getColor(startPiece), endPiece, moveType,
+				promotionPieceType);
+	}
+
+	public void move(Move move) {
+		int startPos = move.getStartPosition();
+		int endPos = move.getEndPosition();
+		int startPiece = move.getStartPiece();
+		int endPiece = move.getEndPiece();
+		int moveType = move.getFlags();
+		int promotionPieceType = move.getPromotionPieceType();
+
+		move(startPos, endPos, startPiece, ChessPiece.getColor(startPiece), endPiece, moveType,
+				promotionPieceType);
+	}
+
+	private void move(int startPos, int endPos, int startPiece, int startColor, int endPiece, int moveType, int promotionType) {
+		savedStates[stateIndex++] = new State(this.castlingPermissions, this.enPassantPosition, this.halfMoveClock);
+		
+		// Check for capture, and remove from the board
+		// Covers en passant captures
+		if (endPiece != ChessPiece.NULL_PIECE) {
+			int effectiveCapturePos = endPos;
+			if (moveType == Move.Flags.EN_PASSANT.value()) {
+				effectiveCapturePos += (startColor == ChessColor.WHITE.value() ? Position.S
+						: Position.N);
 			}
+			clear(effectiveCapturePos);
+			updateCastlingPerm(effectiveCapturePos);
 		}
 
-		return true;
-	}
-
-	public boolean isRankRangeEmpty(int file, int rankStart, int rankEnd) {
-		for (int rank = rankStart; rank <= rankEnd; rank++) {
-			if (Position.isValidPosition(file, rank) && !isEmpty(new Position(file, rank))) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	public boolean isWhite(Position pos) {
-		return white.containsKey(pos);
-	}
-
-	public boolean isBlack(Position pos) {
-		return black.containsKey(pos);
-	}
-
-	public boolean isColor(ChessColor color, Position pos) {
-		if (color.equals(ChessColor.BLACK)) {
-			return isBlack(pos);
+		// Move start piece to new position
+		// Covers promotion and
+		// Quiet moves
+		clear(startPos);
+		if (moveType == Move.Flags.PROMOTION.value()) {
+			set(endPos, ChessPiece.fromRaw(startColor, promotionType));
 		} else {
-			return isWhite(pos);
-		}
-	}
-
-	public HashMap<Position, ChessPiece> getPiecesByColor(ChessColor color) {
-		if (color.equals(ChessColor.BLACK)) {
-			return black;
-		} else {
-			return white;
-		}
-	}
-
-	public boolean hasPieceMoved(Position pos, ChessPiece piece) {
-		return hasMoved.contains(new Pair<Position, ChessPiece>(pos, piece));
-	}
-
-	// TODO Implement a way to include choices for the promotion
-	public void updateWith(Move move) {
-		HashMap<Position, ChessPiece> pieces = getPiecesByColor(move.getPiece().getColor());
-
-		hasMoved.add(new Pair<Position, ChessPiece>(move.getStart(), move.getPiece()));
-		pieces.remove(move.getStart());
-		ChessPiece previousOccupant = null;
-		if (move.getFlags().contains(MoveFlags.PROMOTION)) {
-			previousOccupant = pieces.put(move.getEnd(),
-					new ChessPiece(move.getPiece().getColor(), PieceType.QUEEN));
-		} else {
-			previousOccupant = pieces.put(move.getEnd(), move.getPiece());
+			set(endPos, startPiece);
 		}
 
-		if (previousOccupant != null) {
-			taken.add(previousOccupant);
-		}
+		// implements castling moves
+		if (moveType == Move.Flags.CASTLE.value()) {
+			int castlingRookStart = Position.NULL_POSITION;
+			int castlingRookEnd = Position.NULL_POSITION;
 
-		if (move.getFlags().contains(MoveFlags.EN_PASSANT)) {
-			Position enPassantPawn = new Position(move.getEnd().getFile(),
-					move.getEnd().getRank() - move.getPiece().getColor().getForwardDirection());
-			taken.add(pieces.remove(enPassantPawn));
-		}
-
-		if (move.getFlags().contains(MoveFlags.CASTLE)) {
-			int sign = Integer.signum(move.getEnd().getFile() - move.getStart().getFile());
-			int rookFile = (sign > 0) ? 8 : 1;
-			Position oldCastlePosition = new Position(rookFile, move.getEnd().getRank());
-			Position newCastlePosition = new Position(move.getEnd().getFile() - sign,
-					move.getEnd().getRank());
-
-			pieces.put(newCastlePosition, pieces.remove(oldCastlePosition));
-		}
-	}
-
-	public static boolean checkTabooFileRange(boolean[][] taboo, int fileStart, int fileEnd, int rank) {
-		for (int file = fileStart; file <= fileEnd; file++) {
-			if (Position.isValidPosition(file, rank) && !taboo[file][rank]) {
-				return false;
+			if (endPos == Position.from(File.F_G, Rank.R_1)) {
+				castlingRookStart = Position.from(File.F_H, Rank.R_1);
+				castlingRookEnd = Position.from(File.F_F, Rank.R_1);
+			} else if (endPos == Position.from(File.F_G, Rank.R_1)) {
+				castlingRookStart = Position.from(File.F_A, Rank.R_1);
+			} else if (endPos == Position.from(File.F_D, Rank.R_1)) {
+				castlingRookStart = Position.from(File.F_H, Rank.R_8);
+				castlingRookEnd = Position.from(File.F_F, Rank.R_8);
+			} else if (endPos == Position.from(File.F_G, Rank.R_1)) {
+				castlingRookStart = Position.from(File.F_A, Rank.R_8);
+				castlingRookEnd = Position.from(File.F_D, Rank.R_8);
+			} else {
+				assert false;
 			}
+
+			set(castlingRookEnd, clear(castlingRookStart));
 		}
 
-		return true;
+		updateCastlingPerm(startPos);
+
+		// check for pawn double and update passant
+		if (moveType == Move.Flags.DOUBLE_PAWN_PUSH.value()) {
+			this.enPassantPosition = endPos
+					+ (startColor == ChessColor.WHITE.value() ? Position.S : Position.N);
+		} else {
+			this.enPassantPosition = Position.NULL_POSITION;
+		}
+
+		// flip color and update half move clock
+		this.activeColor = ChessColor.opposite(activeColor);
+		if (endPiece != ChessPiece.NULL_PIECE
+				|| ChessPiece.getPieceType(startPiece) == PieceType.PAWN.value()) {
+			this.halfMoveClock = 0;
+		} else {
+			this.halfMoveClock++;
+		}
 	}
 
-	public static boolean checkTabooRankRange(boolean[][] taboo, int file, int rankStart, int rankEnd) {
-		for (int rank = rankStart; rank <= rankEnd; rank++) {
-			if (Position.isValidPosition(file, rank) && !taboo[file][rank]) {
-				return false;
+	public void unmove(int move) {
+		assert Move.isValid(move);
+
+		int startPos = Move.getStartPosition(move);
+		int endPos = Move.getEndPosition(move);
+		int startPiece = Move.getStartPiece(move);
+		int endPiece = Move.getEndPiece(move);
+		int moveType = Move.getFlags(move);
+		int promotionPieceType = Move.getPromotionPieceType(move);
+
+		unmove(startPos, endPos, startPiece, ChessPiece.getColor(startPiece), endPiece, moveType,
+				promotionPieceType);
+	}
+
+	public void unmove(Move move) {
+		int startPos = move.getStartPosition();
+		int endPos = move.getEndPosition();
+		int startPiece = move.getStartPiece();
+		int endPiece = move.getEndPiece();
+		int moveType = move.getFlags();
+		int promotionPieceType = move.getPromotionPieceType();
+
+		unmove(startPos, endPos, startPiece, ChessPiece.getColor(startPiece), endPiece, moveType,
+				promotionPieceType);
+	}
+
+	private void unmove(int startPos, int endPos, int startPiece, int startColor, int endPiece, int moveType, int promotionType) {
+		this.activeColor = ChessColor.opposite(activeColor);
+
+		// implements castling moves
+		if (moveType == Move.Flags.CASTLE.value()) {
+			int castlingRookStart = Position.NULL_POSITION;
+			int castlingRookEnd = Position.NULL_POSITION;
+
+			if (endPos == Position.from(File.F_G, Rank.R_1)) {
+				castlingRookStart = Position.from(File.F_H, Rank.R_1);
+				castlingRookEnd = Position.from(File.F_F, Rank.R_1);
+			} else if (endPos == Position.from(File.F_G, Rank.R_1)) {
+				castlingRookStart = Position.from(File.F_A, Rank.R_1);
+			} else if (endPos == Position.from(File.F_D, Rank.R_1)) {
+				castlingRookStart = Position.from(File.F_H, Rank.R_8);
+				castlingRookEnd = Position.from(File.F_F, Rank.R_8);
+			} else if (endPos == Position.from(File.F_G, Rank.R_1)) {
+				castlingRookStart = Position.from(File.F_A, Rank.R_8);
+				castlingRookEnd = Position.from(File.F_D, Rank.R_8);
+			} else {
+				assert false;
 			}
+
+			set(castlingRookStart, clear(castlingRookEnd));
 		}
 
-		return true;
+		// implements
+		clear(endPos);
+		set(startPos, startPiece);
+
+		if (endPiece != ChessPiece.NULL_PIECE) {
+			int effectiveCapturePos = endPos;
+			if (moveType == Move.Flags.EN_PASSANT.value()) {
+				effectiveCapturePos += (startColor == ChessColor.WHITE.value() ? Position.S
+						: Position.N);
+			}
+			set(effectiveCapturePos, endPiece);
+		}
+		
+		State saved = savedStates[stateIndex--];
+		this.castlingPermissions = saved.castlingPermissions;
+		this.enPassantPosition = saved.enPassantPosition;
+		this.halfMoveClock = saved.halfMoveClock;
 	}
 
-	public final class Pair<A, B> {
-		private final A	first;
-		private final B	second;
+	private void updateCastlingPerm(int position) {
+		int updatedPermissions = this.castlingPermissions;
 
-		public Pair(A first, B second) {
-			this.first = first;
-			this.second = second;
+		if (position == Position.from(File.F_A, Rank.R_1)) {
+			updatedPermissions &= ~CastlingBitFlags.WHITE_QUEENSIDE.value();
+		} else if (position == Position.from(File.F_A, Rank.R_8)) {
+			updatedPermissions &= ~CastlingBitFlags.BLACK_QUEENSIDE.value();
+		} else if (position == Position.from(File.F_H, Rank.R_1)) {
+			updatedPermissions &= ~CastlingBitFlags.WHITE_KINGSIDE.value();
+		} else if (position == Position.from(File.F_H, Rank.R_8)) {
+			updatedPermissions &= ~CastlingBitFlags.BLACK_KINGSIDE.value();
+		} else if (position == Position.from(File.F_E, Rank.R_1)) {
+			updatedPermissions &= ~(CastlingBitFlags.WHITE_QUEENSIDE.value()
+					| CastlingBitFlags.WHITE_KINGSIDE.value());
+		} else if (position == Position.from(File.F_E, Rank.R_8)) {
+			updatedPermissions &= ~(CastlingBitFlags.BLACK_QUEENSIDE.value()
+					| CastlingBitFlags.BLACK_KINGSIDE.value());
+		} else {
+			return;
 		}
 
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + getOuterType().hashCode();
-			result = prime * result + ((first == null) ? 0 : first.hashCode());
-			result = prime * result + ((second == null) ? 0 : second.hashCode());
-			return result;
+		this.castlingPermissions = updatedPermissions;
+	}
+
+	public static class ChessBoardFactory {
+
+		public static ChessBoard startingBoard() {
+			ChessBoard board = new ChessBoard();
+
+			board.castlingPermissions = CastlingBitFlags
+					.value(EnumSet.allOf(CastlingBitFlags.class));
+
+			for (File f : Position.File.values()) {
+				board.set(Position.from(f, Rank.R_2), ChessPiece.WHITE_PAWN.value());
+				board.set(Position.from(f, Rank.R_7), ChessPiece.BLACK_PAWN.value());
+			}
+
+			board.set(Position.from(File.F_A, Rank.R_1), ChessPiece.WHITE_ROOK.value());
+			board.set(Position.from(File.F_H, Rank.R_1), ChessPiece.WHITE_ROOK.value());
+			board.set(Position.from(File.F_A, Rank.R_8), ChessPiece.BLACK_ROOK.value());
+			board.set(Position.from(File.F_H, Rank.R_8), ChessPiece.BLACK_ROOK.value());
+
+			board.set(Position.from(File.F_B, Rank.R_1), ChessPiece.WHITE_KNIGHT.value());
+			board.set(Position.from(File.F_G, Rank.R_1), ChessPiece.WHITE_KNIGHT.value());
+			board.set(Position.from(File.F_B, Rank.R_8), ChessPiece.BLACK_KNIGHT.value());
+			board.set(Position.from(File.F_G, Rank.R_8), ChessPiece.BLACK_KNIGHT.value());
+
+			board.set(Position.from(File.F_C, Rank.R_1), ChessPiece.WHITE_BISHOP.value());
+			board.set(Position.from(File.F_F, Rank.R_1), ChessPiece.WHITE_BISHOP.value());
+			board.set(Position.from(File.F_C, Rank.R_8), ChessPiece.BLACK_BISHOP.value());
+			board.set(Position.from(File.F_F, Rank.R_8), ChessPiece.BLACK_BISHOP.value());
+
+			board.set(Position.from(File.F_C, Rank.R_1), ChessPiece.WHITE_BISHOP.value());
+			board.set(Position.from(File.F_F, Rank.R_1), ChessPiece.WHITE_BISHOP.value());
+			board.set(Position.from(File.F_C, Rank.R_8), ChessPiece.BLACK_BISHOP.value());
+			board.set(Position.from(File.F_F, Rank.R_8), ChessPiece.BLACK_BISHOP.value());
+
+			board.set(Position.from(File.F_D, Rank.R_1), ChessPiece.WHITE_QUEEN.value());
+			board.set(Position.from(File.F_D, Rank.R_8), ChessPiece.BLACK_QUEEN.value());
+
+			board.set(Position.from(File.F_E, Rank.R_1), ChessPiece.WHITE_KING.value());
+			board.set(Position.from(File.F_E, Rank.R_8), ChessPiece.BLACK_KING.value());
+
+			return board;
 		}
 
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			Pair<?, ?> other = (Pair<?, ?>) obj;
-			if (!getOuterType().equals(other.getOuterType()))
-				return false;
-			if (first == null) {
-				if (other.first != null)
-					return false;
-			} else if (!first.equals(other.first))
-				return false;
-			if (second == null) {
-				if (other.second != null)
-					return false;
-			} else if (!second.equals(other.second))
-				return false;
-			return true;
+		// TODO (Optional) Implement chessboard from fen string
+		public static ChessBoard fromFEN(String fen) {
+			throw new UnsupportedOperationException();
 		}
 
-		private ChessBoard getOuterType() {
-			return ChessBoard.this;
-		}
-
-		public A first() {
-			return first;
-		}
-
-		public B second() {
-			return second;
-		}
 	}
 }

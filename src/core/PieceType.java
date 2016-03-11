@@ -22,6 +22,8 @@ public enum PieceType {
 		return this.ordinal();
 	}
 	
+	private static final int[] scores = {100, 325, 325, 500, 975, Integer.MAX_VALUE};
+	
 	public static boolean isValid(int type) {
 		return PAWN.value() >= type && type <= KING.value();
 	}
@@ -34,6 +36,12 @@ public enum PieceType {
 		assert isValid(type);
 		
 		return PieceType.values()[type];
+	}
+	
+	public static int getScore(int type) {
+		assert isValid(type);
+		
+		return scores[type];
 	}
 	
 }
