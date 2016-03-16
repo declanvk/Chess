@@ -187,46 +187,56 @@ public class ChessBoard {
 		}
 
 		for (int i = 0; i < MoveGeneration.knightOffsets.length; i++) {
-			int knightPos = position - MoveGeneration.knightOffsets[i];
+			int knightPos = position + MoveGeneration.knightOffsets[i];
 			if (Position.isValid(knightPos) && this.get(knightPos) == attackingKnight) {
 				return true;
 			}
 		}
 
 		for (int i = 0; i < MoveGeneration.rookDirections.length; i++) {
-			int rookPos = position - MoveGeneration.rookDirections[i];
+			int rookPos = position + MoveGeneration.rookDirections[i];
 			while (Position.isValid(rookPos)) {
 				if (this.get(rookPos) != ChessPiece.NULL_PIECE) {
-					if (this.get(rookPos) == attackingRook
-							|| this.get(position) == attackingQueen) {
+					if (this.get(rookPos) == attackingRook) {
 						return true;
-					} else if (ChessPiece.getColor(this.get(rookPos)) == ChessColor
-							.opposite(attackerColor)) {
+					} else {
 						break;
 					}
 				}
-				rookPos -= MoveGeneration.rookDirections[i];
+				rookPos += MoveGeneration.rookDirections[i];
 			}
 		}
 
 		for (int i = 0; i < MoveGeneration.bishopDirections.length; i++) {
-			int bishopPos = position - MoveGeneration.bishopDirections[i];
+			int bishopPos = position + MoveGeneration.bishopDirections[i];
 			while (Position.isValid(bishopPos)) {
 				if (this.get(bishopPos) != ChessPiece.NULL_PIECE) {
-					if (this.get(bishopPos) == attackingBishop
-							|| this.get(position) == attackingQueen) {
+					if (this.get(bishopPos) == attackingBishop) {
 						return true;
-					} else if (ChessPiece.getColor(this.get(bishopPos)) == ChessColor
-							.opposite(attackerColor)) {
+					} else {
 						break;
 					}
 				}
-				bishopPos -= MoveGeneration.bishopDirections[i];
+				bishopPos += MoveGeneration.bishopDirections[i];
+			}
+		}
+
+		for (int i = 0; i < MoveGeneration.queenDirections.length; i++) {
+			int queenPos = position + MoveGeneration.queenDirections[i];
+			while (Position.isValid(queenPos)) {
+				if (this.get(queenPos) != ChessPiece.NULL_PIECE) {
+					if (this.get(queenPos) == attackingQueen) {
+						return true;
+					} else {
+						break;
+					}
+				}
+				queenPos += MoveGeneration.queenDirections[i];
 			}
 		}
 
 		for (int i = 0; i < MoveGeneration.kingOffsets.length; i++) {
-			int kingPos = position - MoveGeneration.kingOffsets[i];
+			int kingPos = position + MoveGeneration.kingOffsets[i];
 			if (Position.isValid(kingPos) && this.get(kingPos) == attackingKing) {
 				return true;
 			}

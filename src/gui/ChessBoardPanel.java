@@ -20,30 +20,30 @@ import core.Position;
 @SuppressWarnings("serial")
 public class ChessBoardPanel extends JPanel {
 
-	private final String					name;
+	private final String name;
 
-	private final ChessBoard				board;
+	private final ChessBoard board;
 
-	private final HashMap<Integer, Color>	positionsToColor;
+	private final HashMap<Integer, Color> positionsToColor;
 
 	// Rendering values
-	private static final int				cellSize		= 60;
-	private static final int				dx				= 10;
-	private static final int				dy				= 40;
-	private static final int				rank_tx			= 10;
-	private static final int				rank_ty			= cellSize / 2 - 10;
-	private static final int				file_tx			= cellSize / 2 - 5;
-	private static final int				file_ty			= 20;
-	private static final int				marginSize		= 30;
-	private static final int				borderSize		= 2;
+	private static final int cellSize = 60;
+	private static final int dx = 10;
+	private static final int dy = 40;
+	private static final int rank_tx = 10;
+	private static final int rank_ty = cellSize / 2 - 10;
+	private static final int file_tx = cellSize / 2 - 5;
+	private static final int file_ty = 20;
+	private static final int marginSize = 30;
+	private static final int borderSize = 2;
 
 	// Objects to draw. Will be assigned location, dynamically assigned color
-	private static final int				boxLength		= 8;
-	private final Rectangle[][]				boxes;
-	private final Font						contentsFont	= new Font("Serif", Font.PLAIN, 40);
-	private final Font						annotationsFont	= new Font("Serif", Font.PLAIN, 22);
-	private final Color						dark			= Color.DARK_GRAY;
-	private final Color						light			= Color.LIGHT_GRAY;
+	private static final int boxLength = 8;
+	private final Rectangle[][] boxes;
+	private final Font contentsFont = new Font("Serif", Font.PLAIN, 40);
+	private final Font annotationsFont = new Font("Serif", Font.PLAIN, 22);
+	private final Color dark = Color.DARK_GRAY;
+	private final Color light = Color.LIGHT_GRAY;
 
 	public ChessBoardPanel(String name, ChessBoard board) {
 		this.name = name;
@@ -74,8 +74,7 @@ public class ChessBoardPanel extends JPanel {
 	public void paintComponent(Graphics g) {
 		Graphics2D g2 = (Graphics2D) g;
 		super.paintComponent(g2);
-		if (board == null)
-			return;
+		if (board == null) return;
 
 		g2.setBackground(Color.WHITE);
 		g2.setFont(contentsFont);

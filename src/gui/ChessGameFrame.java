@@ -5,10 +5,13 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import core.ChessBoard;
+import core.ChessColor;
 import core.Move;
+import engine.MoveGeneration;
 
 @SuppressWarnings("serial")
 public class ChessGameFrame extends JFrame implements Runnable {
@@ -33,6 +36,10 @@ public class ChessGameFrame extends JFrame implements Runnable {
 		super("Chess");
 		this.setBackground(Color.BLACK);
 
+		createComponents();
+	}
+
+	private void createComponents() {
 		String name = "Chess";
 		ChessBoard board = ChessBoard.ChessBoardFactory.startingBoard();
 		this.white = new HumanPlayer("White player", core.ChessColor.WHITE.value(), board);
@@ -42,7 +49,7 @@ public class ChessGameFrame extends JFrame implements Runnable {
 		add(this.boardPanel);
 		GameThread<ChessBoardPanel, ChessBoardPanel> gameThread =
 				new GameThread<ChessBoardPanel, ChessBoardPanel>(this.white, this.black,
-						this.boardPanel, this.boardPanel, board, this.boardPanel);
+						this.boardPanel, this.boardPanel, board, this);
 		SwingUtilities.invokeLater(gameThread);
 	}
 
@@ -56,19 +63,21 @@ public class ChessGameFrame extends JFrame implements Runnable {
 
 		private final ChessBoard board;
 		private final ChessBoardPanel panel;
+		private final ChessGameFrame frame;
 
 		private boolean playerToggle; // false -
 										// white, true -
 										// black
 
 		public GameThread(Player<W> w, Player<B> b, W whiteIn, B blackIn, ChessBoard g,
-				ChessBoardPanel boardPanel) {
+				final ChessGameFrame frame) {
 			this.white = w;
 			this.black = b;
 			this.whiteInput = whiteIn;
 			this.blackInput = blackIn;
 			this.board = g;
-			this.panel = boardPanel;
+			this.panel = frame.boardPanel;
+			this.frame = frame;
 
 			this.playerToggle = false;
 			this.changeListener = new PropertyChangeListener() {
@@ -88,6 +97,14 @@ public class ChessGameFrame extends JFrame implements Runnable {
 					(playerToggle ? black : white).removeMoveListener(changeListener);
 
 					playerToggle = !playerToggle;
+					if (board.isCheck() && MoveGeneration.getMoves(board, false).size() == 0) {
+						JOptionPane.showMessageDialog(null,
+								"The " + ChessColor
+										.from(ChessColor.opposite(board.getActiveColor()))
+								+ " player has won!");
+						return;
+					}
+
 					startCurrentPlayerTurn();
 				}
 

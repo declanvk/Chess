@@ -317,10 +317,11 @@ public class MoveGeneration {
 
 	private static void addMove(Collection<Pair<Integer, Integer>> moves, ChessBoard position,
 			int move) {
+		int checkColor = ChessPiece.getColor(Move.getStartPiece(move));
 		position.move(move);
-		boolean make = !position.isCheck(ChessColor.opposite(position.getActiveColor()));
+		boolean isCheck = position.isCheck(checkColor);
 		position.unmove(move);
-		if (make) {
+		if (!isCheck) {
 			moves.add(new Pair<Integer, Integer>(move, position.staticExchangeEvaluation(move)));
 		}
 	}

@@ -82,16 +82,23 @@ public class HumanPlayer extends Player<ChessBoardPanel> {
 					&& piece.getColor() == color) {
 				System.err.println(color + " player" + ": In first state");
 				ArrayList<Move> moves = positionMoveMap.get(pos);
+				
+				int moveCount = 0;
 				if (moves != null) {
+					moveCount = 0;
 					for (Move m : moves) {
 						positionsToMoves.put(m.getEndPosition(), m);
+						moveCount++;
 					}
 				}
+				
 				input.addColorPositions(new ArrayList<Integer>(positionsToMoves.keySet()),
 						possibleMovesColor);
 				input.repaint();
 
-				state = true;
+				if (moveCount > 0) {
+					state = true;
+				}
 			} else if (state) {
 				System.err.println(color + " player" + ": In second state");
 				input.clearColorPositions();
