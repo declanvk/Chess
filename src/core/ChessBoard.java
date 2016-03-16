@@ -3,6 +3,7 @@ package core;
 import java.util.Arrays;
 import java.util.EnumSet;
 
+import core.Bitboard.BitboardOperation;
 import core.Position.File;
 import core.Position.Rank;
 import engine.MoveGeneration;
@@ -175,6 +176,155 @@ public class ChessBoard {
 		int mobility = 0;
 
 		// TODO implement mobility as a part of evaluation
+		final Bitboard enemyOccupancy = occupancy[ChessColor.opposite(activeColor)];
+		final Bitboard friendOccupancy = occupancy[activeColor];
+		final Bitboard allOccupancy = occupancy[BOTH_COLOR];
+
+		Bitboard pawnMobility = pieces[activeColor][PieceType.PAWN.value()].clone();
+		pawnMobility.operate(new BitboardOperation() {
+
+			@Override
+			public long operate(long board) {
+				long attacks = 0L;
+				if (activeColor == ChessColor.WHITE.value()) {
+					long nw = (board << 7) & ~Position.File.F_H.board().value();
+					long ne = (board << 9) & ~Position.File.F_A.board().value();
+					attacks = nw | ne;
+				} else {
+					long ne = (board << 7) & ~Position.File.F_A.board().value();
+					long nw = (board << 9) & ~Position.File.F_H.board().value();
+					attacks = nw | ne;
+				}
+				attacks &= enemyOccupancy.value();
+
+				long moves = 0L;
+				if (activeColor == ChessColor.WHITE.value()) {
+					long singleMove = (board << 8);
+					long doubleMove = ((singleMove & ~enemyOccupancy.value()) << 8);
+					moves = singleMove | doubleMove;
+				} else {
+					long singleMove = (board >>> 8);
+					long doubleMove = ((singleMove & ~enemyOccupancy.value()) >>> 8);
+					moves = singleMove | doubleMove;
+				}
+				moves &= ~enemyOccupancy.value();
+
+				return moves | attacks;
+			}
+
+		});
+
+		Bitboard knightMobility = pieces[activeColor][PieceType.KNIGHT.value()].clone();
+		knightMobility.operate(new BitboardOperation() {
+
+			private final int[] shifts = { 8 - 1 - 1, 8 + 8 - 1, 8 + 8 + 1, 8 + 1 + 1 };
+
+			private final long[] maskOff =
+					{ Position.File.F_A.board().value() | Position.File.F_B.board().value(),
+							Position.File.F_G.board().value() | Position.File.F_H.board().value() };
+
+			@Override
+			public long operate(long board) {
+				long[] results = new long[8];
+				for (int i = 0; i < shifts.length; i++) {
+					results[i] |= (board << shifts[i]) & ~maskOff[i / 2];
+					results[i + 4] |= (board >>> shifts[i]) & ~maskOff[(i / 2) ^ 1];
+				}
+
+				long result = 0L;
+				for (int i = 0; i < results.length; i++) {
+					result |= results[i];
+				}
+
+				return result & ~friendOccupancy.value();
+			}
+		});
+
+		Bitboard kingMobility = pieces[activeColor][PieceType.KNIGHT.value()].clone();
+		kingMobility.operate(new BitboardOperation() {
+
+			@Override
+			public long operate(long board) {
+				long[] results = new long[8];
+				results[0] = board << 8;
+				results[1] = board >> 8;
+				results[2] = (board << 1) & ~Position.File.F_A.board().value();
+				results[3] = (board >> 1) & ~Position.File.F_H.board().value();
+
+				results[4] = (board << 9) & ~Position.File.F_A.board().value();
+				results[5] = (board >> 7) & ~Position.File.F_H.board().value();
+				results[6] = (board << 7) & ~Position.File.F_A.board().value();
+				results[7] = (board >> 9) & ~Position.File.F_H.board().value();
+
+				long result = 0L;
+				for (int i = 0; i < results.length; i++) {
+					result |= results[i];
+				}
+
+				return result & ~friendOccupancy.value();
+			}
+
+		});
+
+		Bitboard rookMobility = new Bitboard();
+		for (Integer pos : pieces[activeColor][PieceType.ROOK.value()]) {
+			for (int direction : MoveGeneration.rookDirections) {
+				int position = pos + direction;
+				while (Position.isValid(position)) {
+					if (ChessPiece.isValid(this.get(position))) {
+						if (ChessPiece.getColor(this.get(position)) != activeColor) {
+							rookMobility.set(position);
+						}
+
+						break;
+					} else {
+						rookMobility.set(position);
+						position += direction;
+					}
+				}
+			}
+		}
+
+		Bitboard bishopMobility = new Bitboard();
+		for (Integer pos : pieces[activeColor][PieceType.BISHOP.value()]) {
+			for (int direction : MoveGeneration.bishopDirections) {
+				int position = pos + direction;
+				while (Position.isValid(position)) {
+					if (ChessPiece.isValid(this.get(position))) {
+						if (ChessPiece.getColor(this.get(position)) != activeColor) {
+							bishopMobility.set(position);
+						}
+
+						break;
+					} else {
+						bishopMobility.set(position);
+						position += direction;
+					}
+				}
+			}
+		}
+
+		Bitboard queenMobility = new Bitboard();
+		for (Integer pos : pieces[activeColor][PieceType.QUEEN.value()]) {
+			for (int direction : MoveGeneration.queenDirections) {
+				int position = pos + direction;
+				while (Position.isValid(position)) {
+					if (ChessPiece.isValid(this.get(position))) {
+						if (ChessPiece.getColor(this.get(position)) != activeColor) {
+							queenMobility.set(position);
+						}
+
+						break;
+					} else {
+						queenMobility.set(position);
+						position += direction;
+					}
+				}
+			}
+		}
+
+		mobility = pawnMobility.size() + knightMobility.size() + kingMobility.size()
+				+ rookMobility.size() + bishopMobility.size() + queenMobility.size();
 
 		return (material + mobility) * (activeColor == ChessColor.WHITE.value() ? 1 : -1);
 	}
