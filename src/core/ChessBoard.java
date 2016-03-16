@@ -55,7 +55,7 @@ public class ChessBoard {
 
 		// TODO Implement a standard for this and a class with this as a
 		// constant
-		this.savedStates = new State[1024];
+		this.savedStates = new State[2048];
 		this.stateIndex = 0;
 
 		this.castlingPermissions = CastlingBitFlags.NO_CASTLING;
@@ -168,6 +168,15 @@ public class ChessBoard {
 	public int staticExchangeEvaluation(int move) {
 		return 1; // TODO (wait until chess engine started) implement static
 					// exchange evaluation
+	}
+
+	public int evaluate() {
+		int material = materialScore[activeColor];
+		int mobility = 0;
+
+		// TODO implement mobility as a part of evaluation
+
+		return (material + mobility) * (activeColor == ChessColor.WHITE.value() ? 1 : -1);
 	}
 
 	// fast return, returns as soon as it finds an attacker

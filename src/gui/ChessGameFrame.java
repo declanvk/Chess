@@ -42,14 +42,14 @@ public class ChessGameFrame extends JFrame implements Runnable {
 	private void createComponents() {
 		String name = "Chess";
 		ChessBoard board = ChessBoard.ChessBoardFactory.startingBoard();
-		this.white = new HumanPlayer("White player", core.ChessColor.WHITE.value(), board);
-		this.black = new HumanPlayer("Black Player", core.ChessColor.BLACK.value(), board);
+		this.white = new HumanPlayer("White player", ChessColor.WHITE.value(), board);
+		this.black = new ArtificialPlayer("Black player", ChessColor.BLACK.value());
 		this.boardPanel = new ChessBoardPanel(name + " Board", board);
 
 		add(this.boardPanel);
-		GameThread<ChessBoardPanel, ChessBoardPanel> gameThread =
-				new GameThread<ChessBoardPanel, ChessBoardPanel>(this.white, this.black,
-						this.boardPanel, this.boardPanel, board, this);
+		GameThread<ChessBoardPanel, ChessBoard> gameThread =
+				new GameThread<ChessBoardPanel, ChessBoard>(this.white, this.black, this.boardPanel,
+						board, board, this);
 		SwingUtilities.invokeLater(gameThread);
 	}
 

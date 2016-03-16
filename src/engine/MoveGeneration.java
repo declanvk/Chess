@@ -56,8 +56,17 @@ public class MoveGeneration {
 				}
 
 			};
+			
+	public static ArrayList<Integer> getMoves(ChessBoard position, boolean quiescent) {
+		ArrayList<Integer> moves = new ArrayList<Integer>();
+		for(Pair<Integer, Integer> moveValue: getMoveValues(position, quiescent)) {
+			moves.add(moveValue.first());
+		}
+		
+		return moves;
+	}
 
-	public static ArrayList<Pair<Integer, Integer>> getMoves(ChessBoard position,
+	private static ArrayList<Pair<Integer, Integer>> getMoveValues(ChessBoard position,
 			boolean quiescent) {
 		boolean isCheck = position.isCheck();
 		ArrayList<Pair<Integer, Integer>> moves = getMoves(position);
@@ -301,7 +310,7 @@ public class MoveGeneration {
 
 	public static HashMap<Integer, ArrayList<Move>> getSortedMoves(ChessBoard position) {
 		HashMap<Integer, ArrayList<Move>> moveMap = new HashMap<Integer, ArrayList<Move>>();
-		ArrayList<Pair<Integer, Integer>> moves = getMoves(position, false);
+		ArrayList<Pair<Integer, Integer>> moves = getMoveValues(position, false);
 
 		for (Pair<Integer, Integer> moveValue : moves) {
 			Move move = Move.from(moveValue.first());
