@@ -31,7 +31,7 @@ public enum PieceType {
 	}
 	
 	public static boolean isValidPromotion(int type) {
-		return KNIGHT.value() >= type && type <= QUEEN.value() || type == NULL_PROMOTION;
+		return KNIGHT.value() <= type && type <= QUEEN.value() || type == NULL_PROMOTION;
 	}
 	
 	public static PieceType from(int type) {

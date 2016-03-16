@@ -32,10 +32,8 @@ public class Move {
 		assert Position.isValid(endPos);
 		assert Flags.isValid(flag);
 		assert ChessPiece.isValid(startPiece);
-		if (!(ChessPiece.isValid(endPiece) || endPiece == ChessPiece.NULL_PIECE))
-			System.out.println(endPiece);
 		assert ChessPiece.isValid(endPiece) || endPiece == ChessPiece.NULL_PIECE;
-		assert PieceType.isValidPromotion(promotion) || promotion == -1;
+		assert PieceType.isValidPromotion(promotion) || promotion == PieceType.NULL_PROMOTION;
 
 		this.startPiece = startPiece;
 		this.endPiece = endPiece;

@@ -7,14 +7,14 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
-import core.ChessGame;
+import core.ChessBoard;
 import core.Move;
 
 @SuppressWarnings("serial")
 public class ChessGameFrame extends JFrame implements Runnable {
 
-	private ChessBoardPanel	boardPanel;
-	private Player			white, black;
+	private ChessBoardPanel boardPanel;
+	private Player white, black;
 
 	@Override
 	public void run() {
@@ -32,48 +32,61 @@ public class ChessGameFrame extends JFrame implements Runnable {
 	public ChessGameFrame() {
 		super("Chess");
 		this.setBackground(Color.BLACK);
-		
+
 		String name = "Chess";
-		ChessGame game = new ChessGame(name + " Game");
-		this.white = new HumanPlayer("White player", core.ChessColor.WHITE, game);
-		this.black = new HumanPlayer("Black Player", core.ChessColor.BLACK, game);
-		this.boardPanel = new ChessBoardPanel(name + " Board", game);
+		ChessBoard board = ChessBoard.ChessBoardFactory.startingBoard();
+		this.white = new HumanPlayer("White player", core.ChessColor.WHITE.value(), board);
+		this.black = new HumanPlayer("Black Player", core.ChessColor.BLACK.value(), board);
+		this.boardPanel = new ChessBoardPanel(name + " Board", board);
 
 		add(this.boardPanel);
-
-		SwingUtilities.invokeLater(new GameThread<ChessBoardPanel, ChessBoardPanel>(this.white,
-				this.black, this.boardPanel, this.boardPanel, game));
+		GameThread<ChessBoardPanel, ChessBoardPanel> gameThread =
+				new GameThread<ChessBoardPanel, ChessBoardPanel>(this.white, this.black,
+						this.boardPanel, this.boardPanel, board, this.boardPanel);
+		SwingUtilities.invokeLater(gameThread);
 	}
 
 	private final class GameThread<W, B> implements Runnable {
 
-		private final Player<W>					white;
-		private final Player<B>					black;
-		private final W							whiteInput;
-		private final B							blackInput;
-		private final PropertyChangeListener	changeListener;
+		private final Player<W> white;
+		private final Player<B> black;
+		private final W whiteInput;
+		private final B blackInput;
+		private final PropertyChangeListener changeListener;
 
-		private final ChessGame					game;
+		private final ChessBoard board;
+		private final ChessBoardPanel panel;
 
-		private boolean							playerToggle;	// false -
-																// white, true -
-																// black
+		private boolean playerToggle; // false -
+										// white, true -
+										// black
 
-		public GameThread(Player<W> w, Player<B> b, W whiteIn, B blackIn, ChessGame g) {
+		public GameThread(Player<W> w, Player<B> b, W whiteIn, B blackIn, ChessBoard g,
+				ChessBoardPanel boardPanel) {
 			this.white = w;
 			this.black = b;
 			this.whiteInput = whiteIn;
 			this.blackInput = blackIn;
-			this.game = g;
+			this.board = g;
+			this.panel = boardPanel;
 
 			this.playerToggle = false;
 			this.changeListener = new PropertyChangeListener() {
 
 				@Override
 				public void propertyChange(PropertyChangeEvent evt) {
-					System.out.println("Registering move submission");
-					game.updateWith((Move) evt.getNewValue());
-					(playerToggle ? white : black).removeMoveListener(changeListener);
+					System.err.println("ChessGameFrame: Registering move submission");
+
+					Move move = (Move) evt.getNewValue();
+					System.err.println("GameThread: " + move);
+					board.move(move);
+					panel.repaint();
+
+					white.updateWith(move);
+					black.updateWith(move);
+
+					(playerToggle ? black : white).removeMoveListener(changeListener);
+
 					playerToggle = !playerToggle;
 					startCurrentPlayerTurn();
 				}
@@ -83,17 +96,17 @@ public class ChessGameFrame extends JFrame implements Runnable {
 
 		@Override
 		public void run() {
-			System.out.println("Starting current player's turn");
+			System.err.println("ChessGameFrame: Starting current player's turn");
 			startCurrentPlayerTurn();
 		}
 
 		private void startCurrentPlayerTurn() {
 			(playerToggle ? black : white).addMoveListener(changeListener);
 			if (playerToggle) {
-				System.out.println("Starting black's turn");
+				System.err.println("ChessGameFrame: Starting black's turn");
 				black.startTurn(blackInput);
 			} else {
-				System.out.println("Starting white's turn");
+				System.err.println("ChessGameFrame: Starting white's turn");
 				white.startTurn(whiteInput);
 			}
 		}

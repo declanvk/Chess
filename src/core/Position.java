@@ -83,7 +83,7 @@ public class Position {
 	public static final int[] allDirections = { N, NE, E, SE, S, SW, W, NW };
 
 	public static final int BIT_WIDTH = 8;
-	public static final int NULL_POSITION = -1;
+	public static final int NULL_POSITION = 0x7F;
 	public static final int NUM_TOTAL_VALUES = 1 << (BIT_WIDTH - 1);
 
 	private static final int[] positions = new int[64];

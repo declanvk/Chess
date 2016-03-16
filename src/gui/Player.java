@@ -30,17 +30,17 @@ public abstract class Player<I> {
 	}
 
 	public void addMoveListener(PropertyChangeListener listener) {
-		System.out.println("Adding listener to " + this.name);
+		System.err.println("Player: Adding listener to " + this.name);
 		mPcs.addPropertyChangeListener(listener);
 	}
 
 	public void removeMoveListener(PropertyChangeListener listener) {
-		System.out.println("Removing listener from " + this.name);
+		System.err.println("Player: Removing listener from " + this.name);
 		mPcs.removePropertyChangeListener(listener);
 	}
 
 	public void startTurn(I input) {
-		System.out.println("Starting " + this.name + "'s turn");
+		System.err.println("Player: Starting " + this.name + "'s turn");
 		this.input = input;
 		this.startTurnProtected();
 	}
@@ -48,14 +48,14 @@ public abstract class Player<I> {
 	public void endTurn() {
 		this.endTurnProtected();
 		this.input = null;
-		System.out.println("Ending " + this.name + "'s turn");
+		System.err.println("Player: Ending " + this.name + "'s turn");
 	}
 
 	protected void submitMove(Move m) {
-		System.out.println("Submitting " + this.name + "'s move");
+		System.err.println("Player: Submitting " + this.name + "'s move");
 		mPcs.firePropertyChange("move", movesMade.peekLast(), m);
-		movesMade.add(m);
 		this.endTurn();
+		movesMade.add(m);
 	}
 
 	public abstract void updateWith(Move m);

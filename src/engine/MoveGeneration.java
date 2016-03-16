@@ -2,10 +2,10 @@ package engine;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.TreeSet;
 
 import core.Bitboard;
 import core.CastlingBitFlags;
@@ -52,14 +52,15 @@ public class MoveGeneration {
 
 				@Override
 				public int compare(Pair<Integer, Integer> o1, Pair<Integer, Integer> o2) {
-					return Integer.compare(o1.second(), o2.second());
+					return Integer.compare(o2.second(), o1.second());
 				}
 
 			};
 
-	public static TreeSet<Pair<Integer, Integer>> getMoves(ChessBoard position, boolean quiescent) {
+	public static ArrayList<Pair<Integer, Integer>> getMoves(ChessBoard position,
+			boolean quiescent) {
 		boolean isCheck = position.isCheck();
-		TreeSet<Pair<Integer, Integer>> moves = getMoves(position);
+		ArrayList<Pair<Integer, Integer>> moves = getMoves(position);
 
 		if (!quiescent) {
 			if (!isCheck) {
@@ -77,21 +78,22 @@ public class MoveGeneration {
 			}
 		}
 
+		Collections.sort(moves, moveSorter);
 		return moves;
 	}
 
-	private static TreeSet<Pair<Integer, Integer>> getMoves(ChessBoard position) {
-		TreeSet<Pair<Integer, Integer>> moves = new TreeSet<Pair<Integer, Integer>>(moveSorter);
+	private static ArrayList<Pair<Integer, Integer>> getMoves(ChessBoard position) {
+		ArrayList<Pair<Integer, Integer>> moves = new ArrayList<Pair<Integer, Integer>>();
 
 		// Get queen moves
-		int startPos =
-				position.getPieces(position.getActiveColor(), PieceType.QUEEN.value()).getSingle();
-		getMovesSliding(moves, startPos, queenDirections, position);
+		for (Integer pos : position.getPieces(position.getActiveColor(), PieceType.QUEEN.value())) {
+			getMovesSliding(moves, pos, queenDirections, position);
+		}
 
 		// Get king moves
-		startPos =
-				position.getPieces(position.getActiveColor(), PieceType.KING.value()).getSingle();
-		getMovesNonSliding(moves, startPos, kingOffsets, position);
+		for (Integer pos : position.getPieces(position.getActiveColor(), PieceType.KING.value())) {
+			getMovesNonSliding(moves, pos, kingOffsets, position);
+		}
 
 		// Get rook moves
 		for (Integer pos : position.getPieces(position.getActiveColor(), PieceType.ROOK.value())) {
@@ -238,10 +240,8 @@ public class MoveGeneration {
 
 		});
 
-		Bitboard toPromote = Bitboard.or(pawnAttacks, pawnSingleMoves, pawnDoubleMoves,
-				(position.getActiveColor() == ChessColor.WHITE.value())
-						? Position.Rank.R_8.board().opposite()
-						: Position.Rank.R_1.board().opposite());
+		Bitboard promoteRank = (position.getActiveColor() == ChessColor.WHITE.value())
+				? Position.Rank.R_8.board().opposite() : Position.Rank.R_1.board().opposite();
 
 		for (int endPos : pawnAttacks) {
 			int flags = Move.Flags.CAPTURE.value();
@@ -249,26 +249,31 @@ public class MoveGeneration {
 				flags = Move.Flags.EN_PASSANT.value();
 			}
 
-			addPawnMoves(moves, startPos, position, toPromote, flags, endPos);
+			addPawnMoves(moves, startPos, position, promoteRank, flags, endPos);
 		}
 
 		for (int endPos : pawnSingleMoves) {
 			int flags = Move.Flags.QUIET.value();
-			addPawnMoves(moves, startPos, position, toPromote, flags, endPos);
+			addPawnMoves(moves, startPos, position, promoteRank, flags, endPos);
 		}
 
 		for (int endPos : pawnDoubleMoves) {
 			int flags = Move.Flags.DOUBLE_PAWN_PUSH.value();
-			addPawnMoves(moves, startPos, position, toPromote, flags, endPos);
+			addPawnMoves(moves, startPos, position, promoteRank, flags, endPos);
 		}
 	}
 
 	private static void addPawnMoves(Collection<Pair<Integer, Integer>> moves, int startPos,
 			final ChessBoard position, Bitboard toPromote, int flags, int endPos) {
-		assert startPos != endPos;
 		if (!toPromote.check(endPos)) {
-			int move = Move.value(position.get(startPos), position.get(endPos), startPos, endPos,
-					flags, PieceType.NULL_PROMOTION);
+			int endPosShift = 0;
+			if (flags == Move.Flags.EN_PASSANT.value()) {
+				endPosShift = (position.getActiveColor() == ChessColor.WHITE.value() ? Position.S
+						: Position.N);
+			}
+
+			int move = Move.value(position.get(startPos), position.get(endPos + endPosShift),
+					startPos, endPos, flags, PieceType.NULL_PROMOTION);
 			addMove(moves, position, move);
 		} else {
 			flags = Move.Flags.PROMOTION.value();
@@ -306,53 +311,19 @@ public class MoveGeneration {
 	}
 
 	public static HashMap<Integer, ArrayList<Move>> getSortedMoves(ChessBoard position) {
-		HashMap<Integer, ArrayList<Move>> moves = new HashMap<Integer, ArrayList<Move>>();
-		ArrayList<Pair<Integer, Integer>> queenMoves = new ArrayList<Pair<Integer, Integer>>();
-		ArrayList<Pair<Integer, Integer>> kingMoves = new ArrayList<Pair<Integer, Integer>>();
-		ArrayList<Pair<Integer, Integer>> rookMoves = new ArrayList<Pair<Integer, Integer>>();
-		ArrayList<Pair<Integer, Integer>> bishopMoves = new ArrayList<Pair<Integer, Integer>>();
-		ArrayList<Pair<Integer, Integer>> knightMoves = new ArrayList<Pair<Integer, Integer>>();
-		ArrayList<Pair<Integer, Integer>> pawnMoves = new ArrayList<Pair<Integer, Integer>>();
+		HashMap<Integer, ArrayList<Move>> moveMap = new HashMap<Integer, ArrayList<Move>>();
+		ArrayList<Pair<Integer, Integer>> moves = getMoves(position, false);
 
-		// Get queen moves
-		int startPos =
-				position.getPieces(position.getActiveColor(), PieceType.QUEEN.value()).getSingle();
-		getMovesSliding(queenMoves, startPos, queenDirections, position);
-		moves.put(startPos, convertMoveValueToMove(queenMoves));
+		for (Pair<Integer, Integer> moveValue : moves) {
+			Move move = Move.from(moveValue.first());
+			if (!moveMap.containsKey(move.getStartPosition())) {
+				moveMap.put(move.getStartPosition(), new ArrayList<Move>());
+			}
 
-		// Get king moves
-		startPos =
-				position.getPieces(position.getActiveColor(), PieceType.KING.value()).getSingle();
-		getMovesNonSliding(kingMoves, startPos, kingOffsets, position);
-		moves.put(startPos, convertMoveValueToMove(kingMoves));
-
-		// Get rook moves
-		for (Integer pos : position.getPieces(position.getActiveColor(), PieceType.ROOK.value())) {
-			getMovesSliding(rookMoves, pos, rookDirections, position);
-			moves.put(pos, convertMoveValueToMove(rookMoves));
+			moveMap.get(move.getStartPosition()).add(move);
 		}
 
-		// Get bishop moves
-		for (Integer pos : position.getPieces(position.getActiveColor(),
-				PieceType.BISHOP.value())) {
-			getMovesSliding(bishopMoves, pos, bishopDirections, position);
-			moves.put(pos, convertMoveValueToMove(bishopMoves));
-		}
-
-		// Get knight moves
-		for (Integer pos : position.getPieces(position.getActiveColor(),
-				PieceType.KNIGHT.value())) {
-			getMovesNonSliding(knightMoves, pos, knightOffsets, position);
-			moves.put(pos, convertMoveValueToMove(knightMoves));
-		}
-
-		// Get pawn moves
-		for (Integer pos : position.getPieces(position.getActiveColor(), PieceType.PAWN.value())) {
-			getPawnMoves(pawnMoves, pos, position);
-			moves.put(pos, convertMoveValueToMove(pawnMoves));
-		}
-
-		return moves;
+		return moveMap;
 	}
 
 	private static void addMove(Collection<Pair<Integer, Integer>> moves, ChessBoard position,
@@ -363,15 +334,5 @@ public class MoveGeneration {
 		if (make) {
 			moves.add(new Pair<Integer, Integer>(move, position.staticExchangeEvaluation(move)));
 		}
-	}
-
-	private static ArrayList<Move> convertMoveValueToMove(ArrayList<Pair<Integer, Integer>> moves) {
-		ArrayList<Move> newMoves = new ArrayList<Move>();
-
-		for (Pair<Integer, Integer> value : moves) {
-			newMoves.add(Move.from(value.first()));
-		}
-
-		return newMoves;
 	}
 }

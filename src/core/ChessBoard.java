@@ -236,6 +236,7 @@ public class ChessBoard {
 	}
 
 	public void move(int move) {
+		Move m = Move.from(move);
 		assert Move.isValid(move);
 
 		int startPos = Move.getStartPosition(move);

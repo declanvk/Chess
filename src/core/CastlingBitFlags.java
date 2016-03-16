@@ -11,11 +11,11 @@ public enum CastlingBitFlags {
 	BLACK_QUEENSIDE(Position.from(File.F_C, Rank.R_8)),
 	BLACK_KINGSIDE(Position.from(File.F_G, Rank.R_8));
 
-	private final int	endPosition;
-	private final int	midPosition;
-	private final int	value;
-	private final int 	color;
-	private final int	side;
+	private final int endPosition;
+	private final int midPosition;
+	private final int value;
+	private final int color;
+	private final int side;
 
 	private CastlingBitFlags(int endPos) {
 		this.endPosition = endPos;
@@ -28,7 +28,7 @@ public enum CastlingBitFlags {
 	public int getEndPosition() {
 		return endPosition;
 	}
-	
+
 	public int getMidPosition() {
 		return midPosition;
 	}
@@ -36,23 +36,23 @@ public enum CastlingBitFlags {
 	public int value() {
 		return value;
 	}
-	
+
 	public int color() {
 		return color;
 	}
-	
+
 	public int side() {
 		return side;
 	}
-	
+
 	public static final int NO_CASTLING = 0;
-	
+
 	public static int value(EnumSet<CastlingBitFlags> castleFlags) {
 		int total = 0;
-		for(CastlingBitFlags flag: castleFlags) {
+		for (CastlingBitFlags flag : castleFlags) {
 			total |= flag.value();
 		}
-		
+
 		return total;
 	}
 
@@ -68,11 +68,9 @@ public enum CastlingBitFlags {
 		assert isValid(castleFlags) || castleFlags == 0;
 
 		EnumSet<CastlingBitFlags> set = EnumSet.noneOf(CastlingBitFlags.class);
-		int bitPosition;
 		while (castleFlags != 0) {
-			bitPosition = Integer.lowestOneBit(castleFlags);
-			set.add(CastlingBitFlags.values()[bitPosition - 1]);
-			castleFlags ^= 1 << bitPosition;
+			set.add(CastlingBitFlags.values()[Integer.numberOfTrailingZeros(castleFlags)]);
+			castleFlags &= ~Integer.lowestOneBit(castleFlags);;
 		}
 
 		return set;
