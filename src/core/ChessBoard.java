@@ -175,10 +175,8 @@ public class ChessBoard {
 		int material = materialScore[activeColor];
 		int mobility = 0;
 
-		// TODO implement mobility as a part of evaluation
 		final Bitboard enemyOccupancy = occupancy[ChessColor.opposite(activeColor)];
 		final Bitboard friendOccupancy = occupancy[activeColor];
-		final Bitboard allOccupancy = occupancy[BOTH_COLOR];
 
 		Bitboard pawnMobility = pieces[activeColor][PieceType.PAWN.value()].clone();
 		pawnMobility.operate(new BitboardOperation() {
