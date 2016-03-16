@@ -183,25 +183,14 @@ public class MoveGeneration {
 				position.getOccupany(ChessColor.opposite(position.getActiveColor()));
 		if (position.getEnPassantPosition() != Position.NULL_POSITION)
 			enemyOccPlusEnPass.set(position.getEnPassantPosition());
-		Bitboard pawnAttacks = pawnPosition.clone();
-		pawnAttacks.operate(new Bitboard.BitboardOperation() {
-
-			@Override
-			public long operate(long board) {
-				if (position.getActiveColor() == ChessColor.WHITE.value()) {
-					long nwBoard = (board << 9) & ~Position.File.F_H.board().value();
-					long neBoard = (board << 7) & ~Position.File.F_A.board().value();
-					board = (nwBoard | neBoard);
-				} else {
-					long nwBoard = (board >>> 9) & ~Position.File.F_A.board().value();
-					long neBoard = (board >>> 7) & ~Position.File.F_H.board().value();
-					board = nwBoard | neBoard;
-				}
-				board &= enemyOccPlusEnPass.value();
-				return board;
+		Bitboard pawnAttacks = new Bitboard();
+		for (int i = 1; i < pawnOffsets[position.getActiveColor()].length; i++) {
+			int endPos = startPos + pawnOffsets[position.getActiveColor()][i];
+			if (Position.isValid(endPos) && position.get(endPos) != ChessPiece.NULL_PIECE) {
+				pawnAttacks.set(endPos);
 			}
-
-		});
+		}
+		pawnAttacks = Bitboard.and(pawnAttacks, enemyOccPlusEnPass);
 
 		Bitboard pawnSingleMoves = pawnPosition.clone();
 		pawnSingleMoves.operate(new Bitboard.BitboardOperation() {
