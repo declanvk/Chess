@@ -6,25 +6,43 @@ import core.Position.File;
 import core.Position.Rank;
 
 public enum CastlingBitFlags {
-	WHITE_QUEENSIDE(Position.from(File.F_A, Rank.R_1)),
-	WHITE_KINGSIDE(Position.from(File.F_H, Rank.R_1)),
-	BLACK_QUEENSIDE(Position.from(File.F_A, Rank.R_8)),
-	BLACK_KINGSIDE(Position.from(File.F_H, Rank.R_8));
+	WHITE_QUEENSIDE(Position.from(File.F_C, Rank.R_1)),
+	WHITE_KINGSIDE(Position.from(File.F_G, Rank.R_1)),
+	BLACK_QUEENSIDE(Position.from(File.F_C, Rank.R_8)),
+	BLACK_KINGSIDE(Position.from(File.F_G, Rank.R_8));
 
-	private final int	position;
+	private final int	endPosition;
+	private final int	midPosition;
 	private final int	value;
+	private final int 	color;
+	private final int	side;
 
-	private CastlingBitFlags(int position) {
-		this.position = position;
+	private CastlingBitFlags(int endPos) {
+		this.endPosition = endPos;
 		this.value = 1 << this.ordinal();
+		this.color = this.ordinal() < 2 ? 0 : 1;
+		this.side = this.ordinal() % 2;
+		this.midPosition = this.endPosition + (this.side == 0 ? Position.E : Position.W);
 	}
 
-	public int getPosition() {
-		return position;
+	public int getEndPosition() {
+		return endPosition;
+	}
+	
+	public int getMidPosition() {
+		return midPosition;
 	}
 
 	public int value() {
 		return value;
+	}
+	
+	public int color() {
+		return color;
+	}
+	
+	public int side() {
+		return side;
 	}
 	
 	public static final int NO_CASTLING = 0;

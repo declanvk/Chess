@@ -45,6 +45,6 @@ public enum ChessColor {
 	public static int opposite(int color) {
 		assert isValid(color);
 		
-		return ~color;
+		return color ^ 1;
 	}
 }

@@ -3,17 +3,22 @@ package core;
 public class Position {
 
 	public static enum File {
-		F_A,
-		F_B,
-		F_C,
-		F_D,
-		F_E,
-		F_F,
-		F_G,
-		F_H;
+		F_A(0x101010101010101L), F_B(0x202020202020202L), F_C(0x404040404040404L),
+		F_D(0x808080808080808L), F_E(0x1010101010101010L), F_F(0x2020202020202020L),
+		F_G(0x4040404040404040L), F_H(0x8080808080808080L);
+
+		private final Bitboard board;
+
+		private File(long value) {
+			this.board = Bitboard.from(value);
+		}
 
 		public int value() {
 			return this.ordinal();
+		}
+
+		public Bitboard board() {
+			return board;
 		}
 
 		public static boolean isValid(int file) {
@@ -28,17 +33,21 @@ public class Position {
 	}
 
 	public static enum Rank {
-		R_1,
-		R_2,
-		R_3,
-		R_4,
-		R_5,
-		R_6,
-		R_7,
-		R_8;
+		R_1(0xffL), R_2(0xff00L), R_3(0xff0000L), R_4(0xff000000L), R_5(0xff00000000L),
+		R_6(0xff0000000000L), R_7(0xff000000000000L), R_8(0xff00000000000000L);
+
+		private final Bitboard board;
+
+		private Rank(long value) {
+			this.board = Bitboard.from(value);
+		}
 
 		public int value() {
 			return this.ordinal();
+		}
+
+		public Bitboard board() {
+			return board;
 		}
 
 		public static boolean isValid(int rank) {
@@ -52,24 +61,32 @@ public class Position {
 		}
 	}
 
-	public static final int		N					= 16;
-	public static final int		E					= 1;
-	public static final int		S					= -16;
-	public static final int		W					= -1;
-	public static final int		NE					= N + E;
-	public static final int		SE					= S + E;
-	public static final int		SW					= S + W;
-	public static final int		NW					= N + W;
+	public static final int N = 16;
+	public static final int E = 1;
+	public static final int S = -16;
+	public static final int W = -1;
+	public static final int NE = N + E;
+	public static final int SE = S + E;
+	public static final int SW = S + W;
+	public static final int NW = N + W;
+	public static final int NNE = N + N + E;
+	public static final int NEE = N + E + E;
+	public static final int SEE = S + E + E;
+	public static final int SSE = S + S + E;
+	public static final int SSW = S + S + W;
+	public static final int SWW = S + W + W;
+	public static final int NWW = N + W + W;
+	public static final int NNW = N + N + W;
 
-	public static final int[]	mainDirections		= { N, E, S, W };
-	public static final int[]	diagDirections		= { NE, SE, SW, NW };
-	public static final int[]	allDirections		= { N, NE, E, SE, S, SW, W, NW };
+	public static final int[] mainDirections = { N, E, S, W };
+	public static final int[] diagDirections = { NE, SE, SW, NW };
+	public static final int[] allDirections = { N, NE, E, SE, S, SW, W, NW };
 
-	public static final int		BIT_WIDTH			= 8;
-	public static final int		NULL_POSITION		= -1;
-	public static final int		NUM_TOTAL_VALUES	= 1 << (BIT_WIDTH - 1);
+	public static final int BIT_WIDTH = 8;
+	public static final int NULL_POSITION = -1;
+	public static final int NUM_TOTAL_VALUES = 1 << (BIT_WIDTH - 1);
 
-	private static final int[]	positions			= new int[64];
+	private static final int[] positions = new int[64];
 
 	static {
 		for (int file = 0; file < 8; file++) {
@@ -88,10 +105,10 @@ public class Position {
 
 	public static int getPosition(int index) {
 		assert index > -1 && index < positions.length;
-		
+
 		return positions[index];
 	}
-	
+
 	public static int getBitIndex(int position) {
 		return (getRank(position) * 8) + getFile(position);
 	}

@@ -18,11 +18,13 @@ public enum ChessPiece {
 	private final ChessColor	color;
 	private final PieceType		type;
 	private final String		unicode;
+	private final int			value;
 
 	ChessPiece(ChessColor color, PieceType type, String uni) {
 		this.color = color;
 		this.type = type;
 		this.unicode = uni;
+		this.value = this.ordinal();
 	}
 
 	public String getUnicode() {
@@ -42,10 +44,10 @@ public enum ChessPiece {
 	}
 
 	public int value() {
-		return this.ordinal();
+		return value;
 	}
 
-	public static final int NULL_PIECE = -1;
+	public static final int NULL_PIECE = 12;
 	public static final int BIT_WIDTH = 4;
 
 	public static boolean isValid(int piece) {
@@ -79,7 +81,7 @@ public enum ChessPiece {
 	public static int getPieceType(int piece) {
 		assert isValid(piece);
 		
-		return piece % 5;
+		return piece % 6;
 	}
 	
 	public static int getScore(int piece) {

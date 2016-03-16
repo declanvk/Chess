@@ -7,10 +7,18 @@ public class ChessNotation {
 		sBoard = new String(new char[Long.numberOfLeadingZeros(board)]).replace('\0', '0') + sBoard;
 		
 		String[] characters = sBoard.split("(?<=\\G.{1})");
-		sBoard = String.join(" ", characters);
+		sBoard = "";
+		for(int i = 0; i < characters.length; i++) {
+			sBoard += characters[i] + (i < characters.length - 1 ? " ": "");
+		}
 		
 		String[] chunks = sBoard.split("(?<=\\G.{16})");
-		return String.join("\n", chunks);
+		String result = "";
+		for(int i = 0; i < chunks.length; i++) {
+			result += chunks[i] + (i < chunks.length - 1 ? "\n": "");
+		}
+		
+		return result;
 	}
 	
 	public static String collateBitBoards(long... boards) {
@@ -78,9 +86,6 @@ public class ChessNotation {
 		System.out.println(convertBitBoardToString((rank1 * masked)) + "\n");
 		System.out.println(convertBitBoardToString((rank1 * masked) << 1) + "\n");
 		System.out.println(convertBitBoardToString((rank1 * masked) >>> 56) + "\n");
-		
-		System.out.println(collateBitBoards(MoveGeneration.knightAttacksLookup));
-		System.out.println(collateBitBoards(MoveGeneration.kingAttacksLookup));		
 	}
 	
 	private static void printPieces(long a, long b, String label) {

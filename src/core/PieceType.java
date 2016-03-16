@@ -8,6 +8,8 @@ public enum PieceType {
 	QUEEN(975),
 	KING(Integer.MAX_VALUE);
 	
+	public final static int NULL_PROMOTION = 6;
+	
 	private final int score;
 	
 	PieceType(int val) {
@@ -25,11 +27,11 @@ public enum PieceType {
 	private static final int[] scores = {100, 325, 325, 500, 975, Integer.MAX_VALUE};
 	
 	public static boolean isValid(int type) {
-		return PAWN.value() >= type && type <= KING.value();
+		return PAWN.value() <= type && type <= KING.value();
 	}
 	
 	public static boolean isValidPromotion(int type) {
-		return KNIGHT.value() >= type && type <= QUEEN.value();
+		return KNIGHT.value() >= type && type <= QUEEN.value() || type == NULL_PROMOTION;
 	}
 	
 	public static PieceType from(int type) {
