@@ -236,7 +236,6 @@ public class ChessBoard {
 	}
 
 	public void move(int move) {
-		Move m = Move.from(move);
 		assert Move.isValid(move);
 
 		int startPos = Move.getStartPosition(move);
@@ -297,12 +296,16 @@ public class ChessBoard {
 			if (endPos == Position.from(File.F_G, Rank.R_1)) {
 				castlingRookStart = Position.from(File.F_H, Rank.R_1);
 				castlingRookEnd = Position.from(File.F_F, Rank.R_1);
-			} else if (endPos == Position.from(File.F_G, Rank.R_1)) {
+
+			} else if (endPos == Position.from(File.F_C, Rank.R_1)) {
 				castlingRookStart = Position.from(File.F_A, Rank.R_1);
-			} else if (endPos == Position.from(File.F_D, Rank.R_1)) {
+				castlingRookEnd = Position.from(File.F_D, Rank.R_1);
+
+			} else if (endPos == Position.from(File.F_G, Rank.R_8)) {
 				castlingRookStart = Position.from(File.F_H, Rank.R_8);
 				castlingRookEnd = Position.from(File.F_F, Rank.R_8);
-			} else if (endPos == Position.from(File.F_G, Rank.R_1)) {
+
+			} else if (endPos == Position.from(File.F_G, Rank.R_8)) {
 				castlingRookStart = Position.from(File.F_A, Rank.R_8);
 				castlingRookEnd = Position.from(File.F_D, Rank.R_8);
 			} else {
@@ -362,7 +365,6 @@ public class ChessBoard {
 			int moveType, int promotionType) {
 		this.activeColor = ChessColor.opposite(activeColor);
 
-		// implements castling moves
 		if (moveType == Move.Flags.CASTLE.value()) {
 			int castlingRookStart = Position.NULL_POSITION;
 			int castlingRookEnd = Position.NULL_POSITION;
@@ -370,12 +372,16 @@ public class ChessBoard {
 			if (endPos == Position.from(File.F_G, Rank.R_1)) {
 				castlingRookStart = Position.from(File.F_H, Rank.R_1);
 				castlingRookEnd = Position.from(File.F_F, Rank.R_1);
-			} else if (endPos == Position.from(File.F_G, Rank.R_1)) {
+
+			} else if (endPos == Position.from(File.F_C, Rank.R_1)) {
 				castlingRookStart = Position.from(File.F_A, Rank.R_1);
-			} else if (endPos == Position.from(File.F_D, Rank.R_1)) {
+				castlingRookEnd = Position.from(File.F_D, Rank.R_1);
+
+			} else if (endPos == Position.from(File.F_G, Rank.R_8)) {
 				castlingRookStart = Position.from(File.F_H, Rank.R_8);
 				castlingRookEnd = Position.from(File.F_F, Rank.R_8);
-			} else if (endPos == Position.from(File.F_G, Rank.R_1)) {
+
+			} else if (endPos == Position.from(File.F_G, Rank.R_8)) {
 				castlingRookStart = Position.from(File.F_A, Rank.R_8);
 				castlingRookEnd = Position.from(File.F_D, Rank.R_8);
 			} else {
