@@ -267,7 +267,7 @@ public class ChessBoard {
 		});
 
 		Bitboard rookMobility = new Bitboard();
-		for (Integer pos : pieces[activeColor][PieceType.ROOK.value()]) {
+		for (Integer pos : pieces[activeColor][PieceType.ROOK.value()].clone()) {
 			for (int direction : MoveGeneration.rookDirections) {
 				int position = pos + direction;
 				while (Position.isValid(position)) {
@@ -286,7 +286,7 @@ public class ChessBoard {
 		}
 
 		Bitboard bishopMobility = new Bitboard();
-		for (Integer pos : pieces[activeColor][PieceType.BISHOP.value()]) {
+		for (Integer pos : pieces[activeColor][PieceType.BISHOP.value()].clone()) {
 			for (int direction : MoveGeneration.bishopDirections) {
 				int position = pos + direction;
 				while (Position.isValid(position)) {
@@ -305,7 +305,7 @@ public class ChessBoard {
 		}
 
 		Bitboard queenMobility = new Bitboard();
-		for (Integer pos : pieces[activeColor][PieceType.QUEEN.value()]) {
+		for (Integer pos : pieces[activeColor][PieceType.QUEEN.value()].clone()) {
 			for (int direction : MoveGeneration.queenDirections) {
 				int position = pos + direction;
 				while (Position.isValid(position)) {
