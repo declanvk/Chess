@@ -8,8 +8,18 @@ import core.Position.File;
 import core.Position.Rank;
 import engine.MoveGeneration;
 
+/**
+ * Representation of the current position that the chess game is in. Contains
+ * all the needed information for any given point in the game of chess.
+ * 
+ * @author declan
+ *
+ */
 public class ChessBoard {
 
+	/**
+	 * Constant used to access the occupancy information for both colors at once
+	 */
 	public static final int BOTH_COLOR = 2;
 
 	private final int[] board; // indexed by position
@@ -37,6 +47,9 @@ public class ChessBoard {
 		}
 	}
 
+	/**
+	 * Constructs an empty ChessBoard.
+	 */
 	public ChessBoard() {
 		this.board = new int[Position.NUM_TOTAL_VALUES];
 		Arrays.fill(this.board, ChessPiece.NULL_PIECE);
@@ -65,28 +78,60 @@ public class ChessBoard {
 		this.halfMoveClock = 0;
 	}
 
+	/**
+	 * Returns the castling permissions for this position
+	 * 
+	 * @return the castling permissions for this position
+	 */
 	public int getCastling() {
 		return castlingPermissions;
 	}
 
+	/**
+	 * Returns the en Passant position if it exists
+	 * 
+	 * @return the en Passant position if it exists
+	 */
 	public int getEnPassantPosition() {
 		return enPassantPosition;
 	}
 
+	/**
+	 * Returns the currently active color
+	 * 
+	 * @return the currently active color
+	 */
 	public int getActiveColor() {
 		return activeColor;
 	}
 
+	/**
+	 * Returns the half move turn clock
+	 * 
+	 * @return the half move turn clock
+	 */
 	public int getHalfTurnClock() {
 		return halfMoveClock;
 	}
 
+	/**
+	 * Returns the material score for the given color
+	 * 
+	 * @param color
+	 * @return the material score for the given color
+	 */
 	public int getScore(int color) {
 		assert ChessColor.isValid(color);
 
 		return materialScore[color];
 	}
 
+	/**
+	 * Returns the ChessPiece located in the given position
+	 * 
+	 * @param position
+	 * @return the ChessPiece located in the given position
+	 */
 	public ChessPiece getObject(int position) {
 		assert Position.isValid(position);
 
@@ -95,12 +140,29 @@ public class ChessBoard {
 		return (piece != ChessPiece.NULL_PIECE) ? ChessPiece.from(piece) : null;
 	}
 
+	/**
+	 * Returns the serialized form of the ChessPiece located in the given
+	 * position
+	 * 
+	 * @param position
+	 * @return the serialized form of the ChessPiece located in the given
+	 *         position
+	 */
 	public int get(int position) {
 		assert Position.isValid(position);
 
 		return board[position];
 	}
 
+	/**
+	 * Returns a Bitboard containing occupancy information for all pieces with
+	 * given type and color
+	 * 
+	 * @param color
+	 * @param type
+	 * @return a Bitboard containing the location information for all pieces
+	 *         with given type and color
+	 */
 	public Bitboard getPieces(int color, int type) {
 		assert ChessColor.isValid(color);
 		assert PieceType.isValid(type);
@@ -108,6 +170,14 @@ public class ChessBoard {
 		return pieces[color][type].clone();
 	}
 
+	/**
+	 * Returns a Bitboard containing the occupancy information for all pieces
+	 * with given color
+	 * 
+	 * @param color
+	 * @return a Bitboard containing the occupancy information for all pieces
+	 *         with given color
+	 */
 	public Bitboard getOccupany(int color) {
 		assert ChessColor.isValid(color) || color == BOTH_COLOR;
 
@@ -143,34 +213,82 @@ public class ChessBoard {
 		return oldPiece;
 	}
 
+	/**
+	 * Returns true if the position doesn't contain a ChessPiece
+	 * 
+	 * @param position
+	 * @return true if the position doesn't contain a ChessPiece
+	 */
 	public boolean isEmpty(int position) {
 		assert Position.isValid(position);
 
 		return board[position] == ChessPiece.NULL_PIECE;
 	}
 
+	/**
+	 * Uses the BOTH_COLOR occupancy information to check for occupancy in all
+	 * the bits set in the given bitboard
+	 * 
+	 * @param board
+	 * @return true if none of the positions set in the given Bitboard contain
+	 *         any pieces
+	 */
 	public boolean isEmptyMask(Bitboard board) {
 		return isEmptyOfColorMask(board, BOTH_COLOR);
 	}
 
+	/**
+	 * Checks the occupancy of the given color using the given Bitboard
+	 * 
+	 * @param board
+	 * @param psuedoColor
+	 * @return true if none of the positions set in the given Bitboard contain
+	 *         any pieces of with the given color
+	 */
 	public boolean isEmptyOfColorMask(Bitboard board, int psuedoColor) {
 		return Bitboard.and(board, occupancy[psuedoColor]).size() == 0;
 	}
 
+	/**
+	 * Returns true if the activeColor is in check in this position
+	 * 
+	 * @return true if the activeColor is in check in this position
+	 */
 	public boolean isCheck() {
 		return isCheck(activeColor);
 	}
 
+	/**
+	 * Returns true if the given color is in check in this position
+	 * 
+	 * @param color
+	 * @return true if the given color is in check in this position
+	 */
 	public boolean isCheck(int color) {
 		return isAttacked(pieces[color][PieceType.KING.value()].getSingle(),
 				ChessColor.opposite(color));
 	}
 
+	/**
+	 * Evaluate the given move using the context of the position and static
+	 * exchange evaluation. This calculates the likely material change to be
+	 * lost or gained.
+	 * 
+	 * @param move
+	 * @return the likely material change
+	 */
 	public int staticExchangeEvaluation(int move) {
 		return 1; // TODO (wait until chess engine started) implement static
 					// exchange evaluation
 	}
 
+	/**
+	 * Evaluates the current position based on the material score and mobility
+	 * of the current active color.
+	 * 
+	 * @return the evaluation of the current position, taking into account
+	 *         material and mobility
+	 */
 	public int evaluate() {
 		int material = materialScore[activeColor];
 		int mobility = 0;
@@ -327,7 +445,13 @@ public class ChessBoard {
 		return (material + mobility) * (activeColor == ChessColor.WHITE.value() ? 1 : -1);
 	}
 
-	// fast return, returns as soon as it finds an attacker
+	/**
+	 * Determines if the given position is being attacked by the given color
+	 * 
+	 * @param position
+	 * @param attackerColor
+	 * @return true if the given position is attacked by the given color
+	 */
 	public boolean isAttacked(int position, int attackerColor) {
 		int attackingPawn = ChessPiece.fromRaw(attackerColor, PieceType.PAWN.value());
 		int attackingKnight = ChessPiece.fromRaw(attackerColor, PieceType.KNIGHT.value());
@@ -402,6 +526,11 @@ public class ChessBoard {
 		return false;
 	}
 
+	/**
+	 * Apply the given serialized Move to the current position
+	 * 
+	 * @param move
+	 */
 	public void move(int move) {
 		assert Move.isValid(move);
 
@@ -416,6 +545,11 @@ public class ChessBoard {
 				promotionType);
 	}
 
+	/**
+	 * Apply the given Move to current position
+	 * 
+	 * @param move
+	 */
 	public void move(Move move) {
 		int startPos = move.getStartPosition();
 		int endPos = move.getEndPosition();
@@ -502,6 +636,11 @@ public class ChessBoard {
 		}
 	}
 
+	/**
+	 * Undo the effect of the given serialized Move
+	 * 
+	 * @param move
+	 */
 	public void unmove(int move) {
 		assert Move.isValid(move);
 
@@ -516,6 +655,11 @@ public class ChessBoard {
 				promotionPieceType);
 	}
 
+	/**
+	 * Undo the effect of the given Move
+	 * 
+	 * @param move
+	 */
 	public void unmove(Move move) {
 		int startPos = move.getStartPosition();
 		int endPos = move.getEndPosition();
@@ -600,8 +744,19 @@ public class ChessBoard {
 		this.castlingPermissions = updatedPermissions;
 	}
 
+	/**
+	 * Factory used to produce ChessBoards.
+	 * 
+	 * @author declan
+	 *
+	 */
 	public static class ChessBoardFactory {
 
+		/**
+		 * Returns a ChessBoard with the default starting arrangement
+		 * 
+		 * @return a ChessBoard with the default starting arrangement
+		 */
 		public static ChessBoard startingBoard() {
 			ChessBoard board = new ChessBoard();
 
