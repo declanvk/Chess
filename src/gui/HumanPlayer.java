@@ -16,12 +16,25 @@ import core.PieceType;
 import core.Position;
 import engine.MoveGeneration;
 
+/**
+ * Represents a HumanPlayer in the Player framework
+ * 
+ * @author declan
+ *
+ */
 public class HumanPlayer extends Player<ChessBoardPanel> {
 
 	private final PlayerAdapter adapter;
 	private final ChessBoard game;
 	private HashMap<Integer, ArrayList<Move>> positionMoveMap;
 
+	/**
+	 * Constructs a new HumanPlayer with the given name, color, and position
+	 * 
+	 * @param name
+	 * @param color
+	 * @param game
+	 */
 	public HumanPlayer(String name, int color, ChessBoard game) {
 		super(name, color);
 
@@ -30,28 +43,54 @@ public class HumanPlayer extends Player<ChessBoardPanel> {
 		this.positionMoveMap = MoveGeneration.getSortedMoves(game);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see gui.Player#updateWith(core.Move)
+	 */
 	@Override
 	public void updateWith(Move m) {
 		positionMoveMap = MoveGeneration.getSortedMoves(game);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see gui.Player#startTurnProtected()
+	 */
 	@Override
 	protected void startTurnProtected() {
 		System.err.println(this.toString() + ": Adding mouse listener");
 		input.addMouseListener(adapter);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see gui.Player#endTurnProtected()
+	 */
 	@Override
 	protected void endTurnProtected() {
 		System.err.println(this.toString() + ": Removing mouse listener");
 		input.removeMouseListener(adapter);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		return this.name;
 	}
 
+	/**
+	 * A listener to capture events on the ChessBoardPanel
+	 * 
+	 * @author declan
+	 *
+	 */
 	private class PlayerAdapter extends MouseAdapter {
 
 		private final Color possibleMovesColor = new Color(255, 25, 25, 128);
@@ -65,12 +104,20 @@ public class HumanPlayer extends Player<ChessBoardPanel> {
 		// true - has registed the first click
 		private boolean state;
 
+		/**
+		 * Constructs a new PlayerAdapter with the given color
+		 * 
+		 * @param c
+		 */
 		public PlayerAdapter(ChessColor c) {
 			this.color = c;
 			this.state = false;
 			this.positionsToMoves = new HashMap<Integer, Move>();
 		}
 
+		/* (non-Javadoc)
+		 * @see java.awt.event.MouseAdapter#mouseClicked(java.awt.event.MouseEvent)
+		 */
 		@Override
 		public void mouseClicked(MouseEvent e) {
 			System.err.println(color + " player" + ": Registering mouse click");
@@ -82,7 +129,7 @@ public class HumanPlayer extends Player<ChessBoardPanel> {
 					&& piece.getColor() == color) {
 				System.err.println(color + " player" + ": In first state");
 				ArrayList<Move> moves = positionMoveMap.get(pos);
-				
+
 				int moveCount = 0;
 				if (moves != null) {
 					moveCount = 0;
@@ -91,7 +138,7 @@ public class HumanPlayer extends Player<ChessBoardPanel> {
 						moveCount++;
 					}
 				}
-				
+
 				input.addColorPositions(new ArrayList<Integer>(positionsToMoves.keySet()),
 						possibleMovesColor);
 				input.repaint();

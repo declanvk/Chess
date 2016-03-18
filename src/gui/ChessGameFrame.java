@@ -13,12 +13,23 @@ import core.ChessColor;
 import core.Move;
 import engine.MoveGeneration;
 
+/**
+ * The top level frame for the Chess GUI
+ * 
+ * @author declan
+ *
+ */
 @SuppressWarnings("serial")
 public class ChessGameFrame extends JFrame implements Runnable {
 
 	private ChessBoardPanel boardPanel;
 	private Player white, black;
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Runnable#run()
+	 */
 	@Override
 	public void run() {
 		setResizable(false);
@@ -32,6 +43,9 @@ public class ChessGameFrame extends JFrame implements Runnable {
 		SwingUtilities.invokeLater(new ChessGameFrame());
 	}
 
+	/**
+	 * Construct a new ChessGameFrame and populate it with GUI components
+	 */
 	public ChessGameFrame() {
 		super("Chess");
 		this.setBackground(Color.BLACK);
@@ -53,6 +67,18 @@ public class ChessGameFrame extends JFrame implements Runnable {
 		SwingUtilities.invokeLater(gameThread);
 	}
 
+	/**
+	 * The game thread will manage the state of the game, updating the players
+	 * with each new move, maintaining the overall state of the board, and
+	 * checking for the end of the game
+	 * 
+	 * @author declan
+	 *
+	 * @param <W>
+	 *            the input that the White player will take
+	 * @param <B>
+	 *            the input that the Black player will take
+	 */
 	private final class GameThread<W, B> implements Runnable {
 
 		private final Player<W> white;
@@ -69,6 +95,22 @@ public class ChessGameFrame extends JFrame implements Runnable {
 										// white, true -
 										// black
 
+		/**
+		 * Construct what new GameThread
+		 * 
+		 * @param w
+		 *            white player
+		 * @param b
+		 *            black player
+		 * @param whiteIn
+		 *            white input
+		 * @param blackIn
+		 *            black input
+		 * @param g
+		 *            ChessBoard position
+		 * @param frame
+		 *            top level GUI frame
+		 */
 		public GameThread(Player<W> w, Player<B> b, W whiteIn, B blackIn, ChessBoard g,
 				final ChessGameFrame frame) {
 			this.white = w;
@@ -111,6 +153,9 @@ public class ChessGameFrame extends JFrame implements Runnable {
 			};
 		}
 
+		/* (non-Javadoc)
+		 * @see java.lang.Runnable#run()
+		 */
 		@Override
 		public void run() {
 			System.err.println("ChessGameFrame: Starting current player's turn");
