@@ -17,19 +17,52 @@ import core.PieceType;
 import core.Position;
 import util.Pair;
 
+/**
+ * A collection of methods that produce legal Moves given a ChessBoars
+ * 
+ * @author declan
+ *
+ */
 public class MoveGeneration {
 
+	/**
+	 * The directions that the rook piece travels in
+	 */
 	public static final int[] rookDirections = { Position.N, Position.S, Position.E, Position.W };
+
+	/**
+	 * The directions that the bishop piece travels in
+	 */
 	public static final int[] bishopDirections =
 			{ Position.NE, Position.NW, Position.SE, Position.SW };
+
+	/**
+	 * The offsets that the knight piece moves on
+	 */
 	public static final int[] knightOffsets = { Position.NNE, Position.NEE, Position.SEE,
 			Position.SSE, Position.SSW, Position.SWW, Position.NWW, Position.NNW };
+
+	/**
+	 * The offsets that the king piece moves on
+	 */
 	public static final int[] kingOffsets = { Position.N, Position.S, Position.E, Position.W,
 			Position.NE, Position.NW, Position.SE, Position.SW };
+
+	/**
+	 * The directions that the queen piece travels in
+	 */
 	public static final int[] queenDirections = { Position.N, Position.S, Position.E, Position.W,
 			Position.NE, Position.NW, Position.SE, Position.SW };
+
+	/**
+	 * The offsets that the pawn piece moves and attacks on, separated by color
+	 */
 	public static final int[][] pawnOffsets =
 			{ { Position.N, Position.NE, Position.NW }, { Position.S, Position.SE, Position.SW } };
+
+	/**
+	 * The initial positions of the king, separated by color
+	 */
 	public static final int[] initialKingPos =
 			{ Position.from(Position.File.F_E, Position.Rank.R_1),
 					Position.from(Position.File.F_E, Position.Rank.R_8) };
@@ -56,13 +89,22 @@ public class MoveGeneration {
 				}
 
 			};
-			
+
+	/**
+	 * Returns all legal moves for the given position, taking into account
+	 * whether or not the search is quiescent
+	 * 
+	 * @param position
+	 * @param quiescent
+	 * @return all legal moves for the given position, taking into account
+	 *         whether or not the search is quiescent
+	 */
 	public static ArrayList<Integer> getMoves(ChessBoard position, boolean quiescent) {
 		ArrayList<Integer> moves = new ArrayList<Integer>();
-		for(Pair<Integer, Integer> moveValue: getMoveValues(position, quiescent)) {
+		for (Pair<Integer, Integer> moveValue : getMoveValues(position, quiescent)) {
 			moves.add(moveValue.first());
 		}
-		
+
 		return moves;
 	}
 
@@ -308,6 +350,14 @@ public class MoveGeneration {
 		}
 	}
 
+	/**
+	 * Returns all legal moves for the given position, sorted into the position
+	 * they originate from
+	 * 
+	 * @param position
+	 * @return all legal moves for the given position, sorted into the position
+	 *         they originate from
+	 */
 	public static HashMap<Integer, ArrayList<Move>> getSortedMoves(ChessBoard position) {
 		HashMap<Integer, ArrayList<Move>> moveMap = new HashMap<Integer, ArrayList<Move>>();
 		ArrayList<Pair<Integer, Integer>> moves = getMoveValues(position, false);
