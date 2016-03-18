@@ -8,6 +8,13 @@ import core.ChessBoard;
 import core.Move;
 import util.Pair;
 
+/**
+ * Contains all the methods used to search the game tree and return the optimal
+ * Move
+ * 
+ * @author declan
+ *
+ */
 public class Search {
 	
 	private static final int CHECKMATE = -1;
@@ -16,6 +23,13 @@ public class Search {
 	private static final int SEARCH_DEPTH = 2;
 	private static final int[] color = { 1, -1 };
 
+	/**
+	 * Given the initial position, determines the best Move for the currently
+	 * active color
+	 * 
+	 * @param position
+	 * @return the best Move for the currently active color
+	 */
 	public static Move search(ChessBoard position) {
 		ArrayList<Integer> moves = MoveGeneration.getMoves(position, false);
 		ArrayList<Pair<Integer, Integer>> movesWithValues = new ArrayList<Pair<Integer, Integer>>();

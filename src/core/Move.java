@@ -1,24 +1,84 @@
 package core;
 
+/**
+ * Represents a move in chess
+ * 
+ * @author declan
+ *
+ */
 public class Move {
 
+	/**
+	 * Represents a type of move in chess
+	 * 
+	 * @author declan
+	 *
+	 */
 	public static enum Flags {
-		QUIET, CAPTURE, CASTLE, PROMOTION, EN_PASSANT, DOUBLE_PAWN_PUSH;
+		/**
+		 * A move that doesn't capture
+		 */
+		QUIET,
 
+		/**
+		 * A move that captures another piece
+		 */
+		CAPTURE,
+
+		/**
+		 * A move that castles
+		 */
+		CASTLE,
+
+		/**
+		 * A pawn promotion
+		 */
+		PROMOTION,
+
+		/**
+		 * An en passant move
+		 */
+		EN_PASSANT,
+
+		/**
+		 * A double pawn move
+		 */
+		DOUBLE_PAWN_PUSH;
+
+		/**
+		 * Returns the serialized form of the Flag
+		 * 
+		 * @return the serialized form of the Flag
+		 */
 		public int value() {
 			return this.ordinal();
 		}
 
+		/**
+		 * Returns true if the given value is a valid serialized Flag
+		 * 
+		 * @param flag
+		 * @return true if the given value is a valid serialized Flag
+		 */
 		public static boolean isValid(int flag) {
 			return QUIET.value() <= flag && flag <= DOUBLE_PAWN_PUSH.value();
 		}
 
+		/**
+		 * Return the Flag associated with the value
+		 * 
+		 * @param flag
+		 * @return the Flag associated with the value
+		 */
 		public static Flags from(int flag) {
 			assert isValid(flag);
 
 			return Flags.values()[flag];
 		}
 
+		/**
+		 * The number of bits required to fully represent a Flag
+		 */
 		public static final int BIT_WIDTH = 3;
 	}
 
@@ -27,6 +87,16 @@ public class Move {
 	private final int startPiece, endPiece;
 	private final int promotionPieceType;
 
+	/**
+	 * Constructs a Move from the given values
+	 * 
+	 * @param startPiece
+	 * @param endPiece
+	 * @param startPos
+	 * @param endPos
+	 * @param flag
+	 * @param promotion
+	 */
 	public Move(int startPiece, int endPiece, int startPos, int endPos, int flag, int promotion) {
 		assert Position.isValid(startPos);
 		assert Position.isValid(endPos);
@@ -43,30 +113,65 @@ public class Move {
 		this.promotionPieceType = promotion;
 	}
 
+	/**
+	 * Returns the starting position of the move
+	 * 
+	 * @return the starting position of the move
+	 */
 	public int getStartPosition() {
 		return startPosition;
 	}
 
+	/**
+	 * Returns the ending position of the move
+	 * 
+	 * @return the ending position of the move
+	 */
 	public int getEndPosition() {
 		return endPosition;
 	}
 
+	/**
+	 * Returns the flags associated with the move
+	 * 
+	 * @return the flags associated with the move
+	 */
 	public int getFlags() {
 		return flags;
 	}
 
+	/**
+	 * Returns the serialized ChessPiece that the move originates from
+	 * 
+	 * @return the serialized ChessPiece that the move originates from
+	 */
 	public int getStartPiece() {
 		return startPiece;
 	}
 
+	/**
+	 * Returns the serialized ChessPiece that the move ends with
+	 * 
+	 * @return the serialized ChessPiece that the move ends with
+	 */
 	public int getEndPiece() {
 		return endPiece;
 	}
 
+	/**
+	 * Returns the PieceType
+	 * 
+	 * @return
+	 */
 	public int getPromotionPieceType() {
 		return promotionPieceType;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		return String.format(
@@ -105,12 +210,28 @@ public class Move {
 		return (Integer.MIN_VALUE >> (width - 1)) >>> (32 - (width + firstBit));
 	}
 
+	/**
+	 * Returns the serialized form of the Move
+	 * 
+	 * @return the serialized form of the Move
+	 */
 	public int value() {
 		return (flags << FLAG_SHIFT) | (startPosition << START_POSITION_SHIFT)
 				| (endPosition << END_POSITION_SHIFT) | (startPiece << START_PIECE_SHIFT)
 				| (endPiece << END_PIECE_SHIFT) | (promotionPieceType << PROMOTION_PIECE_SHIFT);
 	}
 
+	/**
+	 * Returns the serialized form of the Move, given the necessary values
+	 * 
+	 * @param startPiece
+	 * @param endPiece
+	 * @param startPosition
+	 * @param endPosition
+	 * @param flags
+	 * @param promotionPieceType
+	 * @return the serialized form of the Move, given the necessary valuess
+	 */
 	public static int value(int startPiece, int endPiece, int startPosition, int endPosition,
 			int flags, int promotionPieceType) {
 		return (flags << FLAG_SHIFT) | (startPosition << START_POSITION_SHIFT)
@@ -118,6 +239,12 @@ public class Move {
 				| (endPiece << END_PIECE_SHIFT) | (promotionPieceType << PROMOTION_PIECE_SHIFT);
 	}
 
+	/**
+	 * Returns true if the given value is a valid serialized move
+	 * 
+	 * @param move
+	 * @return true if the given value is a valid serialized move
+	 */
 	public static boolean isValid(int move) {
 		int flag = (move & FLAG_MASK) >>> FLAG_SHIFT;
 		int startPos = (move & START_POSITION_MASK) >>> START_POSITION_SHIFT;
@@ -134,6 +261,12 @@ public class Move {
 
 	public static final int NULL_MOVE = -1;
 
+	/**
+	 * Returns a Move constructed from the given serialized value
+	 * 
+	 * @param move
+	 * @return a Move constructed from the given serialized value
+	 */
 	public static Move from(int move) {
 		int flag = (move & FLAG_MASK) >>> FLAG_SHIFT;
 		int startPos = (move & START_POSITION_MASK) >>> START_POSITION_SHIFT;
@@ -146,30 +279,74 @@ public class Move {
 				? new Move(startPiece, endPiece, startPos, endPos, flag, promotion) : null;
 	}
 
+	/**
+	 * Returns the value of the start position from the given serialized move
+	 * 
+	 * @param move
+	 * @return the value of the start position from the given serialized move
+	 */
 	public static int getStartPosition(int move) {
 		return (move & START_POSITION_MASK) >>> START_POSITION_SHIFT;
 	}
 
+	/**
+	 * Returns the value of the end position from the given serialized move
+	 * 
+	 * @param move
+	 * @return the value of the end position from the given serialized move
+	 */
 	public static int getEndPosition(int move) {
 		return (move & END_POSITION_MASK) >>> END_POSITION_SHIFT;
 	}
 
+	/**
+	 * Returns the value of the flags from the given serialized move
+	 * 
+	 * @param move
+	 * @return the value of the flags from the given serialized move
+	 */
 	public static int getFlags(int move) {
 		return (move & FLAG_MASK) >>> FLAG_SHIFT;
 	}
 
+	/**
+	 * Returns the value of the start piece from the given serialized move
+	 * 
+	 * @param move
+	 * @return the value of the start piece from the given serialized move
+	 */
 	public static int getStartPiece(int move) {
 		return (move & START_PIECE_MASK) >>> START_PIECE_SHIFT;
 	}
 
+	/**
+	 * Returns the value of the end piece from the given serialized move
+	 * 
+	 * @param move
+	 * @return the value of the end piece from the given serialized move
+	 */
 	public static int getEndPiece(int move) {
 		return (move & END_PIECE_MASK) >>> END_PIECE_SHIFT;
 	}
 
+	/**
+	 * Returns the value of the promotion piece type from the given serialized
+	 * move
+	 * 
+	 * @param move
+	 * @return the value of the promotion piece type from the given serialized
+	 *         move
+	 */
 	public static int getPromotionPieceType(int move) {
 		return (move & PROMOTION_PIECE_MASK) >>> PROMOTION_PIECE_SHIFT;
 	}
 
+	/**
+	 * Prints a visualization of the serialized move by deconstructing it into
+	 * its component partss
+	 * 
+	 * @param move
+	 */
 	public static void visualizeMoveContents(int move) {
 		printSubset("Total", move, ~0, 0);
 		printSubset("Flag", move, FLAG_MASK, FLAG_SHIFT);

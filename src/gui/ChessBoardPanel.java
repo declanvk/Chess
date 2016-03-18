@@ -17,6 +17,12 @@ import core.ChessBoard;
 import core.ChessPiece;
 import core.Position;
 
+/**
+ * Draws the chess board and is the target for mouse input
+ * 
+ * @author declan
+ *
+ */
 @SuppressWarnings("serial")
 public class ChessBoardPanel extends JPanel {
 
@@ -45,6 +51,12 @@ public class ChessBoardPanel extends JPanel {
 	private final Color dark = Color.DARK_GRAY;
 	private final Color light = Color.LIGHT_GRAY;
 
+	/**
+	 * Constructs a ChessBoardPanel with the given name and board
+	 * 
+	 * @param name
+	 * @param board
+	 */
 	public ChessBoardPanel(String name, ChessBoard board) {
 		this.name = name;
 		this.board = board;
@@ -70,6 +82,11 @@ public class ChessBoardPanel extends JPanel {
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
+	 */
 	@Override
 	public void paintComponent(Graphics g) {
 		Graphics2D g2 = (Graphics2D) g;
@@ -163,6 +180,12 @@ public class ChessBoardPanel extends JPanel {
 		return new Color((int) r, (int) g, (int) b, (int) a);
 	}
 
+	/**
+	 * Returns the chess board position that contains the given cartesian point
+	 * 
+	 * @param p
+	 * @return the chess board position that contains the given cartesian point
+	 */
 	public int getPositionContaining(Point p) {
 		int x = p.x - marginSize, y = p.y - marginSize;
 		int l = cellSize * 8 + borderSize * 7;
@@ -174,22 +197,42 @@ public class ChessBoardPanel extends JPanel {
 		}
 	}
 
+	/**
+	 * Saves the given positions so that on the next render, those positions are
+	 * colored with the given color
+	 * 
+	 * @param positions
+	 * @param color
+	 */
 	void addColorPositions(ArrayList<Integer> positions, Color color) {
 		for (Integer p : positions) {
 			positionsToColor.put(p, color);
 		}
 	}
 
+	/**
+	 * Clears the board of colored positions
+	 */
 	void clearColorPositions() {
 		positionsToColor.clear();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see javax.swing.JComponent#getPreferredSize()
+	 */
 	@Override
 	public Dimension getPreferredSize() {
 		int l = (int) ((boxLength * cellSize) + (2 * marginSize) + ((boxLength - 1) * borderSize));
 		return new Dimension(l, l);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.awt.Component#getName()
+	 */
 	public String getName() {
 		return name;
 	}
