@@ -58,6 +58,7 @@ public class Move {
 		 * Returns true if the given value is a valid serialized Flag
 		 * 
 		 * @param flag
+		 *            the flag value to check the validity of
 		 * @return true if the given value is a valid serialized Flag
 		 */
 		public static boolean isValid(int flag) {
@@ -68,6 +69,7 @@ public class Move {
 		 * Return the Flag associated with the value
 		 * 
 		 * @param flag
+		 *            the flag value to construct a Flags from
 		 * @return the Flag associated with the value
 		 */
 		public static Flags from(int flag) {
@@ -91,11 +93,17 @@ public class Move {
 	 * Constructs a Move from the given values
 	 * 
 	 * @param startPiece
+	 *            the starting piece of the move
 	 * @param endPiece
+	 *            the ending piece of the move
 	 * @param startPos
+	 *            the starting position of the move
 	 * @param endPos
+	 *            the ending position of the move
 	 * @param flag
+	 *            the flags for the move
 	 * @param promotion
+	 *            the promotion piece type of the move, if relevant
 	 */
 	public Move(int startPiece, int endPiece, int startPos, int endPos, int flag, int promotion) {
 		assert Position.isValid(startPos);
@@ -159,9 +167,10 @@ public class Move {
 	}
 
 	/**
-	 * Returns the PieceType
+	 * Returns the serialized PieceType of the promotion, if the move has the
+	 * PROMOTION flag
 	 * 
-	 * @return
+	 * @return the serialized PieceType of the promotion
 	 */
 	public int getPromotionPieceType() {
 		return promotionPieceType;
@@ -225,11 +234,17 @@ public class Move {
 	 * Returns the serialized form of the Move, given the necessary values
 	 * 
 	 * @param startPiece
+	 *            the starting piece value
 	 * @param endPiece
+	 *            the ending piece value
 	 * @param startPosition
+	 *            the starting position value
 	 * @param endPosition
+	 *            the ending position value
 	 * @param flags
+	 *            the value of any flags that apply to the move
 	 * @param promotionPieceType
+	 *            the type value of the promotion
 	 * @return the serialized form of the Move, given the necessary valuess
 	 */
 	public static int value(int startPiece, int endPiece, int startPosition, int endPosition,
@@ -243,6 +258,7 @@ public class Move {
 	 * Returns true if the given value is a valid serialized move
 	 * 
 	 * @param move
+	 *            the move value to check the validity of
 	 * @return true if the given value is a valid serialized move
 	 */
 	public static boolean isValid(int move) {
@@ -265,6 +281,7 @@ public class Move {
 	 * Returns a Move constructed from the given serialized value
 	 * 
 	 * @param move
+	 *            the move value to construct a Move from
 	 * @return a Move constructed from the given serialized value
 	 */
 	public static Move from(int move) {
@@ -283,6 +300,7 @@ public class Move {
 	 * Returns the value of the start position from the given serialized move
 	 * 
 	 * @param move
+	 *            the move value to get the starting position of
 	 * @return the value of the start position from the given serialized move
 	 */
 	public static int getStartPosition(int move) {
@@ -293,6 +311,7 @@ public class Move {
 	 * Returns the value of the end position from the given serialized move
 	 * 
 	 * @param move
+	 *            the move value to get the ending position of
 	 * @return the value of the end position from the given serialized move
 	 */
 	public static int getEndPosition(int move) {
@@ -303,6 +322,7 @@ public class Move {
 	 * Returns the value of the flags from the given serialized move
 	 * 
 	 * @param move
+	 *            the move value to get the flags of
 	 * @return the value of the flags from the given serialized move
 	 */
 	public static int getFlags(int move) {
@@ -313,6 +333,7 @@ public class Move {
 	 * Returns the value of the start piece from the given serialized move
 	 * 
 	 * @param move
+	 *            the move value to get the starting piece of
 	 * @return the value of the start piece from the given serialized move
 	 */
 	public static int getStartPiece(int move) {
@@ -323,6 +344,7 @@ public class Move {
 	 * Returns the value of the end piece from the given serialized move
 	 * 
 	 * @param move
+	 *            the move value to get the ending piece of
 	 * @return the value of the end piece from the given serialized move
 	 */
 	public static int getEndPiece(int move) {
@@ -334,6 +356,7 @@ public class Move {
 	 * move
 	 * 
 	 * @param move
+	 *            the move value to get the promotion piece type of
 	 * @return the value of the promotion piece type from the given serialized
 	 *         move
 	 */
@@ -346,6 +369,7 @@ public class Move {
 	 * its component partss
 	 * 
 	 * @param move
+	 *            the move value to visualize
 	 */
 	public static void visualizeMoveContents(int move) {
 		printSubset("Total", move, ~0, 0);

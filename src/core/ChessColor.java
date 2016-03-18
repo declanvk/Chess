@@ -67,6 +67,7 @@ public enum ChessColor {
 	 * Returns the ChessColor corresponding to the input
 	 * 
 	 * @param color
+	 *            the value to construct a ChessColor from
 	 * @return the ChessColor corresponding to the input
 	 */
 	public static ChessColor from(int color) {
@@ -79,6 +80,7 @@ public enum ChessColor {
 	 * Returns true if the input is valid as a serialized form of ChessColor
 	 * 
 	 * @param color
+	 *            the value to check the validity of
 	 * @return true if the input is valid as a serialized form of ChessColor
 	 */
 	public static boolean isValid(int color) {
@@ -89,6 +91,7 @@ public enum ChessColor {
 	 * If the input is valid, return the opposite serialized ChessColor
 	 * 
 	 * @param color
+	 *            the color value to get the opposite of
 	 * @return the opposite serialized ChessColor
 	 */
 	public static int opposite(int color) {

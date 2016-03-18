@@ -72,6 +72,7 @@ public enum PieceType {
 	 * Returns true if the given value could be a serialized piece type
 	 * 
 	 * @param type
+	 *            the type value to check the validity of
 	 * @return true if the given value could be a serialized piece type
 	 */
 	public static boolean isValid(int type) {
@@ -83,6 +84,7 @@ public enum PieceType {
 	 * valid promotion type
 	 * 
 	 * @param type
+	 *            the type value to check the promotion validity of
 	 * @return true if the given value could be a serialized piece type and a
 	 *         valid promotion type
 	 */
@@ -94,6 +96,7 @@ public enum PieceType {
 	 * Returns the PieceType associated with the given serialized value
 	 * 
 	 * @param type
+	 *            the type value to construct a PieceType from
 	 * @return the PieceType associated with the given serialized value
 	 */
 	public static PieceType from(int type) {
@@ -106,6 +109,7 @@ public enum PieceType {
 	 * Returns the score value of the given serialized value
 	 * 
 	 * @param type
+	 *            the type value to get the score value of
 	 * @return the score value of the given serialized value
 	 */
 	public static int getScore(int type) {

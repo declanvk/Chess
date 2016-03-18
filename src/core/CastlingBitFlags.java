@@ -104,6 +104,7 @@ public enum CastlingBitFlags {
 	 * Returns the serialized value of an EnumSet
 	 * 
 	 * @param castleFlags
+	 *            the EnumSet to serialize
 	 * @return the serialized value of an EnumSet
 	 */
 	public static int value(EnumSet<CastlingBitFlags> castleFlags) {
@@ -119,6 +120,7 @@ public enum CastlingBitFlags {
 	 * Returns the validity of a serialized bitset
 	 * 
 	 * @param castleFlags
+	 *            the value to check the validity of
 	 * @return the validity of a serialized bitset
 	 */
 	public static boolean isValid(int castleFlags) {
@@ -129,6 +131,7 @@ public enum CastlingBitFlags {
 	 * Returns the validity of a single serialized value
 	 * 
 	 * @param castleFlag
+	 *            the value to check the validity of
 	 * @return the validity of a single serialized value
 	 */
 	public static boolean isValidSingle(int castleFlag) {
@@ -139,6 +142,7 @@ public enum CastlingBitFlags {
 	 * Deserializes a serialized bitset, checking for validity
 	 * 
 	 * @param castleFlags
+	 *            the value to construct an EnumSet from
 	 * @return a deserialized bitset
 	 */
 	public static EnumSet<CastlingBitFlags> from(int castleFlags) {
@@ -157,6 +161,7 @@ public enum CastlingBitFlags {
 	 * Deserializes a single value
 	 * 
 	 * @param castleFlag
+	 *            the value to construct a CastlingBitFlag from
 	 * @return a deserialized single value
 	 */
 	public static CastlingBitFlags fromSingle(int castleFlag) {

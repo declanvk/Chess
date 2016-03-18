@@ -34,6 +34,7 @@ public class Bitboard implements Iterable<Integer> {
 		 * Used to perform operations on the internal board representation.
 		 * 
 		 * @param board
+		 *            the internal value of the Bitboard
 		 * @return the new value that the Bitboard should contain.
 		 */
 		long operate(long board);
@@ -63,6 +64,7 @@ public class Bitboard implements Iterable<Integer> {
 	 * Sets the bit at the specified position.
 	 * 
 	 * @param position
+	 *            the position to set
 	 */
 	public void set(int position) {
 		checkIterator();
@@ -74,6 +76,7 @@ public class Bitboard implements Iterable<Integer> {
 	 * Clears the bit at the specified position.
 	 * 
 	 * @param position
+	 *            the position to clear
 	 */
 	public void clear(int position) {
 		checkIterator();
@@ -85,6 +88,7 @@ public class Bitboard implements Iterable<Integer> {
 	 * Toggles the bit at the specified position.
 	 * 
 	 * @param position
+	 *            the position to toggle
 	 */
 	public void toggle(int position) {
 		checkIterator();
@@ -96,6 +100,7 @@ public class Bitboard implements Iterable<Integer> {
 	 * Checks if the bit at the specified position is set
 	 * 
 	 * @param position
+	 *            the position to check
 	 * @return if the bit at the specified position is set
 	 */
 	public boolean check(int position) {
@@ -128,6 +133,7 @@ public class Bitboard implements Iterable<Integer> {
 	 * removing it from the context of the Bitboard.
 	 * 
 	 * @param bitboardOperation
+	 *            the operation to execute
 	 */
 	public void operate(BitboardOperation bitboardOperation) {
 		this.board = bitboardOperation.operate(this.board);
@@ -242,6 +248,7 @@ public class Bitboard implements Iterable<Integer> {
 	 * Factory style method used to construct Bitboards from a primitive long
 	 * 
 	 * @param board
+	 *            the value to construct a board from
 	 * @return new Bitboard containing the board parameter
 	 */
 	public static Bitboard from(long board) {
@@ -251,9 +258,10 @@ public class Bitboard implements Iterable<Integer> {
 	}
 
 	/**
-	 * Combines many Bitboards into one using the & operator.
+	 * Combines many Bitboards into one using the &amp; operator.
 	 * 
 	 * @param boards
+	 *            the boards to combine
 	 * @return a Bitboard containing the result of "anding" all the boards
 	 *         together
 	 */
@@ -271,6 +279,7 @@ public class Bitboard implements Iterable<Integer> {
 	 * Combines many Bitboards into one using the | operator.
 	 * 
 	 * @param boards
+	 *            the boards to combine
 	 * @return a Bitboard containing the result of "oring" all the boards
 	 *         together
 	 */
@@ -288,6 +297,7 @@ public class Bitboard implements Iterable<Integer> {
 	 * Combines many Bitboards into one using the ^ operator.
 	 * 
 	 * @param boards
+	 *            the boards to combine
 	 * @return a Bitboard containing the result of "xoring" all the boards
 	 *         together
 	 */

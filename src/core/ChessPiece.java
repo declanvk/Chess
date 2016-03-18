@@ -141,6 +141,7 @@ public enum ChessPiece {
 	 * Returns true if the given value is a valid serialized ChessPiece
 	 * 
 	 * @param piece
+	 *            the piece value to check the validity of
 	 * @return true if the given value is a valid serialized ChessPiece
 	 */
 	public static boolean isValid(int piece) {
@@ -151,6 +152,7 @@ public enum ChessPiece {
 	 * Returns the ChessPiece associated with the given value, if it is valid
 	 * 
 	 * @param piece
+	 *            the value to construct a ChessPiece from
 	 * @return the ChessPiece associated with the given value
 	 */
 	public static ChessPiece from(int piece) {
@@ -164,7 +166,9 @@ public enum ChessPiece {
 	 * type
 	 * 
 	 * @param color
+	 *            the color value to construct a ChessPiece from
 	 * @param type
+	 *            the type value to construct a ChessPiece from
 	 * @return the ChessPiece associated with the given serialized color and
 	 *         type
 	 */
@@ -177,7 +181,9 @@ public enum ChessPiece {
 	 * serialized color and type
 	 * 
 	 * @param color
+	 *            the color value to construct a serialized ChessPiece from
 	 * @param type
+	 *            the type value to construct a serialized ChessPiece from
 	 * @return the serialized form of the ChessPiece associated with the given
 	 *         serialized color and type
 	 */
@@ -189,7 +195,9 @@ public enum ChessPiece {
 	 * Returns the ChessPiece associated with the given ChessColor and PieceType
 	 * 
 	 * @param color
+	 *            the ChessColor to construct a ChessPiece from
 	 * @param type
+	 *            the PieceType to construct a ChessPiece from
 	 * @return the ChessPiece associated with the given ChessColor and PieceType
 	 */
 	public static ChessPiece from(ChessColor color, PieceType type) {
@@ -201,6 +209,7 @@ public enum ChessPiece {
 	 * serialized ChessPiece
 	 * 
 	 * @param piece
+	 *            the piece value to get the color of
 	 * @return the serialized form of the ChessColor associated with the
 	 *         serialized ChessPiece
 	 */
@@ -215,6 +224,7 @@ public enum ChessPiece {
 	 * serialized ChessPiece
 	 * 
 	 * @param piece
+	 *            the piece value to get the type of
 	 * @return the serialized form of the PieceType associated with the
 	 *         serialized ChessPiece
 	 */
@@ -228,6 +238,7 @@ public enum ChessPiece {
 	 * Returns the score value associated with the serialized ChessPiece
 	 * 
 	 * @param piece
+	 *            the piece value to get the score value of
 	 * @return the score value associated with the serialized ChessPiece
 	 */
 	public static int getScore(int piece) {

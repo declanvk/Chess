@@ -95,7 +95,10 @@ public class MoveGeneration {
 	 * whether or not the search is quiescent
 	 * 
 	 * @param position
+	 *            the position to generate the moves for
 	 * @param quiescent
+	 *            flag telling the move generation whether or not to ignore
+	 *            certain moves
 	 * @return all legal moves for the given position, taking into account
 	 *         whether or not the search is quiescent
 	 */
@@ -355,6 +358,7 @@ public class MoveGeneration {
 	 * they originate from
 	 * 
 	 * @param position
+	 *            the position to generate moves for
 	 * @return all legal moves for the given position, sorted into the position
 	 *         they originate from
 	 */

@@ -16,11 +16,11 @@ import util.Pair;
  *
  */
 public class Search {
-	
+
 	private static final int CHECKMATE = -1;
 	private static final int DRAW = 0;
 
-	private static final int SEARCH_DEPTH = 2;
+	private static final int SEARCH_DEPTH = 4;
 	private static final int[] color = { 1, -1 };
 
 	/**
@@ -28,6 +28,7 @@ public class Search {
 	 * active color
 	 * 
 	 * @param position
+	 *            the position to start the search from
 	 * @return the best Move for the currently active color
 	 */
 	public static Move search(ChessBoard position) {

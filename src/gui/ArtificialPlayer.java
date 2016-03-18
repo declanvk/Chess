@@ -18,20 +18,26 @@ public class ArtificialPlayer extends Player<ChessBoard> {
 	 * Constructs a new ArtificalPlayer with the given name and color
 	 * 
 	 * @param name
+	 *            the name of the ArtificialPlayer
 	 * @param color
+	 *            the color of the ArtificialPlayer
 	 */
 	public ArtificialPlayer(String name, int color) {
 		super(name, color);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see gui.Player#updateWith(core.Move)
 	 */
 	@Override
 	public void updateWith(Move m) {
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see gui.Player#startTurnProtected()
 	 */
 	@Override
@@ -46,7 +52,9 @@ public class ArtificialPlayer extends Player<ChessBoard> {
 		});
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see gui.Player#endTurnProtected()
 	 */
 	@Override

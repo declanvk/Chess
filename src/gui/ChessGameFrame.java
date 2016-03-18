@@ -125,10 +125,8 @@ public class ChessGameFrame extends JFrame implements Runnable {
 
 				@Override
 				public void propertyChange(PropertyChangeEvent evt) {
-					System.err.println("ChessGameFrame: Registering move submission");
-
 					Move move = (Move) evt.getNewValue();
-					System.err.println("GameThread: " + move);
+					System.err.println((playerToggle ? black : white) + ": " + move);
 					board.move(move);
 					panel.repaint();
 
@@ -152,22 +150,21 @@ public class ChessGameFrame extends JFrame implements Runnable {
 			};
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
+		 * 
 		 * @see java.lang.Runnable#run()
 		 */
 		@Override
 		public void run() {
-			System.err.println("ChessGameFrame: Starting current player's turn");
 			startCurrentPlayerTurn();
 		}
 
 		private void startCurrentPlayerTurn() {
 			(playerToggle ? black : white).addMoveListener(changeListener);
 			if (playerToggle) {
-				System.err.println("ChessGameFrame: Starting black's turn");
 				black.startTurn(blackInput);
 			} else {
-				System.err.println("ChessGameFrame: Starting white's turn");
 				white.startTurn(whiteInput);
 			}
 		}

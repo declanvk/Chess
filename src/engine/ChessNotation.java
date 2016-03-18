@@ -7,6 +7,7 @@ public class ChessNotation {
 	 * the ones and zeros in an 8x8 square
 	 * 
 	 * @param board
+	 *            the board to convert to String format
 	 * @return the given String representation of the given raw Bitboard
 	 */
 	public static String convertBitBoardToString(long board) {
@@ -33,6 +34,7 @@ public class ChessNotation {
 	 * arranges them all in a row
 	 * 
 	 * @param boards
+	 *            the boards to convert to String format and collate
 	 * @return the String representation of all the given raw Bitboards arranged
 	 *         in a row
 	 */

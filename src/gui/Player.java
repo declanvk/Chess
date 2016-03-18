@@ -29,7 +29,9 @@ public abstract class Player<I> {
 	 * Constructs a new Player
 	 * 
 	 * @param name
+	 *            the name of the Player
 	 * @param color
+	 *            the color of the Player
 	 */
 	public Player(String name, int color) {
 		this.name = name;
@@ -54,13 +56,23 @@ public abstract class Player<I> {
 		return color;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return name;
+	}
+
 	/**
 	 * Attach a listener that fires when a player submits a Move
 	 * 
 	 * @param listener
+	 *            a listener that is called when a new move is submitted
 	 */
 	public void addMoveListener(PropertyChangeListener listener) {
-		System.err.println("Player: Adding listener to " + this.name);
 		mPcs.addPropertyChangeListener(listener);
 	}
 
@@ -68,9 +80,9 @@ public abstract class Player<I> {
 	 * Remove a listener from the Player
 	 * 
 	 * @param listener
+	 *            the listener to remove
 	 */
 	public void removeMoveListener(PropertyChangeListener listener) {
-		System.err.println("Player: Removing listener from " + this.name);
 		mPcs.removePropertyChangeListener(listener);
 	}
 
@@ -79,9 +91,9 @@ public abstract class Player<I> {
 	 * for the duration of the turn
 	 * 
 	 * @param input
+	 *            the input that the player requires
 	 */
 	public void startTurn(I input) {
-		System.err.println("Player: Starting " + this.name + "'s turn");
 		this.input = input;
 		this.startTurnProtected();
 	}
@@ -93,16 +105,15 @@ public abstract class Player<I> {
 	public void endTurn() {
 		this.endTurnProtected();
 		this.input = null;
-		System.err.println("Player: Ending " + this.name + "'s turn");
 	}
 
 	/**
 	 * Called internally by any Player subclass to indicate that it has a move
 	 * 
 	 * @param m
+	 *            the move to submit
 	 */
 	protected void submitMove(Move m) {
-		System.err.println("Player: Submitting " + this.name + "'s move");
 		mPcs.firePropertyChange("move", movesMade.peekLast(), m);
 		this.endTurn();
 		movesMade.add(m);
@@ -113,6 +124,7 @@ public abstract class Player<I> {
 	 * state is not a requirement for a Player
 	 * 
 	 * @param m
+	 *            the move to update the internal representation with
 	 */
 	public abstract void updateWith(Move m);
 

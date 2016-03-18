@@ -107,6 +107,7 @@ public class Position {
 		 * File
 		 * 
 		 * @param file
+		 *            the file value to check the validity of
 		 * @return true if the given value is a valid serialized value for a
 		 *         File
 		 */
@@ -118,6 +119,7 @@ public class Position {
 		 * Returns a File from the given serialized value
 		 * 
 		 * @param file
+		 *            the file value to construct a File from
 		 * @return a File from the given serialized value
 		 */
 		public static File from(int file) {
@@ -202,6 +204,7 @@ public class Position {
 		 * Returns true if the given value could represent a serialized Rank
 		 * 
 		 * @param rank
+		 *            the rank value to check the validity of
 		 * @return true if the given value could represent a serialized Rank
 		 */
 		public static boolean isValid(int rank) {
@@ -212,6 +215,7 @@ public class Position {
 		 * Returns a Rank from the given serialized form
 		 * 
 		 * @param rank
+		 *            the rank value to construct a Rank from
 		 * @return a Rank from the given serialized form
 		 */
 		public static Rank from(int rank) {
@@ -345,7 +349,9 @@ public class Position {
 	 * Returns the position value given the file and rank
 	 * 
 	 * @param file
+	 *            the file value of the position
 	 * @param rank
+	 *            the rank value of the position
 	 * @return the position value given the file and rank
 	 */
 	public static int getPosition(int file, int rank) {
@@ -360,6 +366,7 @@ public class Position {
 	 * containing valid positions
 	 * 
 	 * @param index
+	 *            the index specifying the position
 	 * @return the position value given its position in a one dimensional array
 	 *         containing valid positions
 	 */
@@ -373,6 +380,7 @@ public class Position {
 	 * Returns the index of the position in a Bitboard
 	 * 
 	 * @param position
+	 *            the position to get the bit index of
 	 * @return the index of the position in a Bitboard
 	 */
 	public static int getBitIndex(int position) {
@@ -386,7 +394,9 @@ public class Position {
 	 * Returns true if the given file and rank are on the chess board
 	 * 
 	 * @param file
+	 *            the file of the position to check
 	 * @param rank
+	 *            the rank of the position to check
 	 * @return true if the given file and rank are on the chess board
 	 */
 	public static boolean isValid(int file, int rank) {
@@ -397,6 +407,7 @@ public class Position {
 	 * Returns true if the given position is valid in the 0x88 format
 	 * 
 	 * @param position
+	 *            the position to check for validity
 	 * @return true if the given position is valid in the 0x88 format
 	 */
 	public static boolean isValid(int position) {
@@ -407,7 +418,9 @@ public class Position {
 	 * Returns the 0x88 position value for the given file and rank
 	 * 
 	 * @param file
+	 *            the file value to construct a position from
 	 * @param rank
+	 *            the rank value to construct a position from
 	 * @return the 0x88 position value for the given file and rank
 	 */
 	public static int from(int file, int rank) {
@@ -421,7 +434,9 @@ public class Position {
 	 * Returns the 0x88 position value for the given File and Rank
 	 * 
 	 * @param file
+	 *            the File to construct a position from
 	 * @param rank
+	 *            the Rank to construct a position from
 	 * @return the 0x88 position value for the given File and Rank
 	 */
 	public static int from(File file, Rank rank) {
@@ -432,6 +447,7 @@ public class Position {
 	 * Returns the rank from the given 0x88 position value
 	 * 
 	 * @param position
+	 *            the position to get the rank of
 	 * @return the rank from the given 0x88 position value
 	 */
 	public static int getRank(int position) {
@@ -442,6 +458,7 @@ public class Position {
 	 * Returns the file from the given 0x88 position value
 	 * 
 	 * @param position
+	 *            the position to get the file of
 	 * @return the file from the given 0x88 position value
 	 */
 	public static int getFile(int position) {
@@ -453,6 +470,7 @@ public class Position {
 	 * flipped
 	 * 
 	 * @param position
+	 *            the position to flip the rank of
 	 * @return the 0x88 position value from the given position with the rank
 	 *         flipped
 	 */
@@ -465,6 +483,7 @@ public class Position {
 	 * flipped
 	 * 
 	 * @param position
+	 *            the position to flip the file of
 	 * @return the 0x88 position value from the given position with the file
 	 *         flipped
 	 */
@@ -477,7 +496,9 @@ public class Position {
 	 * intercardinal directions
 	 * 
 	 * @param pos1
+	 *            the position to check the adjacency of
 	 * @param pos2
+	 *            the position to check the adjacency of
 	 * @return true if the given positions are adjacent in all the cardinal and
 	 *         intercardinal directions
 	 */
@@ -490,7 +511,9 @@ public class Position {
 	 * directions
 	 * 
 	 * @param pos1
+	 *            the position to check the adjacency of
 	 * @param pos2
+	 *            the position to check the adjacency of
 	 * @return true if the given positions are adjacent in all the intercardinal
 	 *         directions
 	 */
@@ -503,7 +526,9 @@ public class Position {
 	 * directions
 	 * 
 	 * @param pos1
+	 *            the position to check the adjacency of
 	 * @param pos2
+	 *            the position to check the adjacency of
 	 * @return true if the given positions are adjacent in all the cardinal
 	 *         directions
 	 */
@@ -525,6 +550,7 @@ public class Position {
 	 * Convert the given position to a String in the algebraic position format
 	 * 
 	 * @param pos
+	 *            the position to convert to String format
 	 * @return the given position to a String in the algebraic position format
 	 */
 	public static String toString(int pos) {

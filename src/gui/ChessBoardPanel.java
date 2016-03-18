@@ -55,7 +55,9 @@ public class ChessBoardPanel extends JPanel {
 	 * Constructs a ChessBoardPanel with the given name and board
 	 * 
 	 * @param name
+	 *            the name of the ChessBoardPanel
 	 * @param board
+	 *            the internal board that the ChessBoardPanel will render
 	 */
 	public ChessBoardPanel(String name, ChessBoard board) {
 		this.name = name;
@@ -184,6 +186,7 @@ public class ChessBoardPanel extends JPanel {
 	 * Returns the chess board position that contains the given cartesian point
 	 * 
 	 * @param p
+	 *            the Point to get to get a position for
 	 * @return the chess board position that contains the given cartesian point
 	 */
 	public int getPositionContaining(Point p) {
@@ -202,7 +205,9 @@ public class ChessBoardPanel extends JPanel {
 	 * colored with the given color
 	 * 
 	 * @param positions
+	 *            the position to color
 	 * @param color
+	 *            the color to color the positions
 	 */
 	void addColorPositions(ArrayList<Integer> positions, Color color) {
 		for (Integer p : positions) {

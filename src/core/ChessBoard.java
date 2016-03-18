@@ -116,6 +116,7 @@ public class ChessBoard {
 	 * Returns the ChessPiece located in the given position
 	 * 
 	 * @param position
+	 *            the position to retrieve a ChessPiece object from
 	 * @return the ChessPiece located in the given position
 	 */
 	public ChessPiece getObject(int position) {
@@ -131,6 +132,7 @@ public class ChessBoard {
 	 * position
 	 * 
 	 * @param position
+	 *            the position to retrieve a serialized ChessPiece from
 	 * @return the serialized form of the ChessPiece located in the given
 	 *         position
 	 */
@@ -145,7 +147,9 @@ public class ChessBoard {
 	 * given type and color
 	 * 
 	 * @param color
+	 *            the color to retrieve piece information for
 	 * @param type
+	 *            the type to retrieve piece information for
 	 * @return a Bitboard containing the location information for all pieces
 	 *         with given type and color
 	 */
@@ -161,6 +165,7 @@ public class ChessBoard {
 	 * with given color
 	 * 
 	 * @param color
+	 *            the color to retrieve occupancy information for
 	 * @return a Bitboard containing the occupancy information for all pieces
 	 *         with given color
 	 */
@@ -201,6 +206,7 @@ public class ChessBoard {
 	 * Returns true if the position doesn't contain a ChessPiece
 	 * 
 	 * @param position
+	 *            the position to check
 	 * @return true if the position doesn't contain a ChessPiece
 	 */
 	public boolean isEmpty(int position) {
@@ -214,6 +220,7 @@ public class ChessBoard {
 	 * the bits set in the given bitboard
 	 * 
 	 * @param board
+	 *            the Bitboard set with the positions to check
 	 * @return true if none of the positions set in the given Bitboard contain
 	 *         any pieces
 	 */
@@ -225,7 +232,9 @@ public class ChessBoard {
 	 * Checks the occupancy of the given color using the given Bitboard
 	 * 
 	 * @param board
+	 *            the Bitboard set with the positions to check
 	 * @param psuedoColor
+	 *            the color to check
 	 * @return true if none of the positions set in the given Bitboard contain
 	 *         any pieces of with the given color
 	 */
@@ -246,6 +255,7 @@ public class ChessBoard {
 	 * Returns true if the given color is in check in this position
 	 * 
 	 * @param color
+	 *            the color to check for check
 	 * @return true if the given color is in check in this position
 	 */
 	public boolean isCheck(int color) {
@@ -259,6 +269,7 @@ public class ChessBoard {
 	 * lost or gained.
 	 * 
 	 * @param move
+	 *            the move to evaluate
 	 * @return the likely material change
 	 */
 	public int staticExchangeEvaluation(int move) {
@@ -278,10 +289,10 @@ public class ChessBoard {
 	 */
 	public int evaluate() {
 		int material = 0;
-		for(PieceType type: PieceType.values()) {
+		for (PieceType type : PieceType.values()) {
 			material += type.score() * pieces[activeColor][type.value()].size();
 		}
-		
+
 		int mobility = 0;
 
 		final Bitboard enemyOccupancy = occupancy[ChessColor.opposite(activeColor)];
@@ -440,7 +451,9 @@ public class ChessBoard {
 	 * Determines if the given position is being attacked by the given color
 	 * 
 	 * @param position
+	 *            the position to check for attacks
 	 * @param attackerColor
+	 *            the color that is attacking
 	 * @return true if the given position is attacked by the given color
 	 */
 	public boolean isAttacked(int position, int attackerColor) {
@@ -521,6 +534,7 @@ public class ChessBoard {
 	 * Apply the given serialized Move to the current position
 	 * 
 	 * @param move
+	 *            the move to make
 	 */
 	public void move(int move) {
 		assert Move.isValid(move);
@@ -540,6 +554,7 @@ public class ChessBoard {
 	 * Apply the given Move to current position
 	 * 
 	 * @param move
+	 *            the move to make
 	 */
 	public void move(Move move) {
 		int startPos = move.getStartPosition();
@@ -631,6 +646,7 @@ public class ChessBoard {
 	 * Undo the effect of the given serialized Move
 	 * 
 	 * @param move
+	 *            the move to unmake
 	 */
 	public void unmove(int move) {
 		assert Move.isValid(move);
@@ -650,6 +666,7 @@ public class ChessBoard {
 	 * Undo the effect of the given Move
 	 * 
 	 * @param move
+	 *            the move to unmake
 	 */
 	public void unmove(Move move) {
 		int startPos = move.getStartPosition();

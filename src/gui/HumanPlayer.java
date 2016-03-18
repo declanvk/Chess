@@ -32,8 +32,11 @@ public class HumanPlayer extends Player<ChessBoardPanel> {
 	 * Constructs a new HumanPlayer with the given name, color, and position
 	 * 
 	 * @param name
+	 *            the name of the HumanPlayer
 	 * @param color
+	 *            the color of the HumanPlayer
 	 * @param game
+	 *            the internal board representation for the HumanPlayer
 	 */
 	public HumanPlayer(String name, int color, ChessBoard game) {
 		super(name, color);
@@ -60,7 +63,6 @@ public class HumanPlayer extends Player<ChessBoardPanel> {
 	 */
 	@Override
 	protected void startTurnProtected() {
-		System.err.println(this.toString() + ": Adding mouse listener");
 		input.addMouseListener(adapter);
 	}
 
@@ -71,7 +73,6 @@ public class HumanPlayer extends Player<ChessBoardPanel> {
 	 */
 	@Override
 	protected void endTurnProtected() {
-		System.err.println(this.toString() + ": Removing mouse listener");
 		input.removeMouseListener(adapter);
 	}
 
@@ -108,6 +109,7 @@ public class HumanPlayer extends Player<ChessBoardPanel> {
 		 * Constructs a new PlayerAdapter with the given color
 		 * 
 		 * @param c
+		 *            the color of the PlayerAdapter
 		 */
 		public PlayerAdapter(ChessColor c) {
 			this.color = c;
@@ -115,19 +117,19 @@ public class HumanPlayer extends Player<ChessBoardPanel> {
 			this.positionsToMoves = new HashMap<Integer, Move>();
 		}
 
-		/* (non-Javadoc)
-		 * @see java.awt.event.MouseAdapter#mouseClicked(java.awt.event.MouseEvent)
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * java.awt.event.MouseAdapter#mouseClicked(java.awt.event.MouseEvent)
 		 */
 		@Override
 		public void mouseClicked(MouseEvent e) {
-			System.err.println(color + " player" + ": Registering mouse click");
 			super.mouseClicked(e);
 			int pos = input.getPositionContaining(e.getPoint());
-			System.err.println(color + " player" + ": At position " + Position.toString(pos));
 			ChessPiece piece = game.getObject(pos);
 			if (!state && pos != Position.NULL_POSITION && piece != null
 					&& piece.getColor() == color) {
-				System.err.println(color + " player" + ": In first state");
 				ArrayList<Move> moves = positionMoveMap.get(pos);
 
 				int moveCount = 0;
@@ -147,7 +149,6 @@ public class HumanPlayer extends Player<ChessBoardPanel> {
 					state = true;
 				}
 			} else if (state) {
-				System.err.println(color + " player" + ": In second state");
 				input.clearColorPositions();
 				input.repaint();
 

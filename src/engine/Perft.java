@@ -21,7 +21,9 @@ public class Perft {
 	 * position and max search depth
 	 * 
 	 * @param position
+	 *            the position to count nodes for
 	 * @param depth
+	 *            the maximum depth at which to count nodes
 	 * @return the number of legal positions in the search tree given an initial
 	 *         position and max search depth
 	 */
