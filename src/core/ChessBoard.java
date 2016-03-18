@@ -13,7 +13,6 @@ public class ChessBoard {
 	public static final int BOTH_COLOR = 2;
 
 	private final int[] board; // indexed by position
-	private final int[] materialScore; // indexed by color;
 	private final Bitboard[][] pieces; // Indexed by color and type
 	private final Bitboard[] occupancy; // Indexed by color plus one for both
 
@@ -41,7 +40,6 @@ public class ChessBoard {
 		this.board = new int[Position.NUM_TOTAL_VALUES];
 		Arrays.fill(this.board, ChessPiece.NULL_PIECE);
 
-		this.materialScore = new int[ChessColor.values().length];
 		this.pieces = new Bitboard[ChessColor.values().length][PieceType.values().length];
 		for (ChessColor color : ChessColor.values()) {
 			for (PieceType type : PieceType.values()) {
@@ -56,7 +54,7 @@ public class ChessBoard {
 
 		// TODO Implement a standard for this and a class with this as a
 		// constant
-		this.savedStates = new State[2048];
+		this.savedStates = new State[4096];
 		this.stateIndex = 0;
 
 		this.castlingPermissions = CastlingBitFlags.NO_CASTLING;
@@ -79,12 +77,6 @@ public class ChessBoard {
 
 	public int getHalfTurnClock() {
 		return halfMoveClock;
-	}
-
-	public int getScore(int color) {
-		assert ChessColor.isValid(color);
-
-		return materialScore[color];
 	}
 
 	public ChessPiece getObject(int position) {
@@ -119,7 +111,6 @@ public class ChessBoard {
 		assert ChessPiece.isValid(piece);
 		assert isEmpty(position);
 
-		materialScore[ChessPiece.getColor(piece)] -= ChessPiece.getScore(piece);
 		pieces[ChessPiece.getColor(piece)][ChessPiece.getPieceType(piece)].set(position);
 		occupancy[ChessPiece.getColor(piece)].set(position);
 		occupancy[BOTH_COLOR].set(position);
@@ -133,7 +124,6 @@ public class ChessBoard {
 
 		int oldPiece = board[position];
 
-		materialScore[ChessPiece.getColor(oldPiece)] -= ChessPiece.getScore(oldPiece);
 		pieces[ChessPiece.getColor(oldPiece)][ChessPiece.getPieceType(oldPiece)].clear(position);
 		occupancy[ChessPiece.getColor(oldPiece)].clear(position);
 		occupancy[BOTH_COLOR].clear(position);
@@ -171,8 +161,15 @@ public class ChessBoard {
 					// exchange evaluation
 	}
 
+	private static final double MATERIAL_WEIGHT = 1.0;
+	private static final double MOBILITY_WEIGHT = 1.0;
+
 	public int evaluate() {
-		int material = materialScore[activeColor];
+		int material = 0;
+		for(PieceType type: PieceType.values()) {
+			material += type.score() * pieces[activeColor][type.value()].size();
+		}
+		
 		int mobility = 0;
 
 		final Bitboard enemyOccupancy = occupancy[ChessColor.opposite(activeColor)];
@@ -324,7 +321,7 @@ public class ChessBoard {
 		mobility = pawnMobility.size() + knightMobility.size() + kingMobility.size()
 				+ rookMobility.size() + bishopMobility.size() + queenMobility.size();
 
-		return (material + mobility) * (activeColor == ChessColor.WHITE.value() ? 1 : -1);
+		return (int) (MATERIAL_WEIGHT * material + MOBILITY_WEIGHT * mobility);
 	}
 
 	// fast return, returns as soon as it finds an attacker
@@ -472,7 +469,7 @@ public class ChessBoard {
 				castlingRookStart = Position.from(File.F_H, Rank.R_8);
 				castlingRookEnd = Position.from(File.F_F, Rank.R_8);
 
-			} else if (endPos == Position.from(File.F_G, Rank.R_8)) {
+			} else if (endPos == Position.from(File.F_C, Rank.R_8)) {
 				castlingRookStart = Position.from(File.F_A, Rank.R_8);
 				castlingRookEnd = Position.from(File.F_D, Rank.R_8);
 			} else {
@@ -548,7 +545,7 @@ public class ChessBoard {
 				castlingRookStart = Position.from(File.F_H, Rank.R_8);
 				castlingRookEnd = Position.from(File.F_F, Rank.R_8);
 
-			} else if (endPos == Position.from(File.F_G, Rank.R_8)) {
+			} else if (endPos == Position.from(File.F_C, Rank.R_8)) {
 				castlingRookStart = Position.from(File.F_A, Rank.R_8);
 				castlingRookEnd = Position.from(File.F_D, Rank.R_8);
 			} else {

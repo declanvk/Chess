@@ -6,7 +6,7 @@ public enum PieceType {
 	BISHOP(325),
 	ROOK(500),
 	QUEEN(975),
-	KING(Integer.MAX_VALUE);
+	KING(20000);
 	
 	public final static int NULL_PROMOTION = 6;
 	
