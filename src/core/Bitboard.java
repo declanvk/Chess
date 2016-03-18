@@ -16,10 +16,6 @@ import java.util.NoSuchElementException;
  * @author declan
  *
  */
-/**
- * @author declan
- *
- */
 public class Bitboard implements Iterable<Integer> {
 
 	/**
