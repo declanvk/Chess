@@ -6,6 +6,7 @@ import java.util.EnumSet;
 import core.Bitboard.BitboardOperation;
 import core.Position.File;
 import core.Position.Rank;
+import engine.ChessNotation;
 import engine.MoveGeneration;
 
 /**
@@ -33,6 +34,7 @@ public class ChessBoard {
 	private int enPassantPosition;
 	private int activeColor;
 	private int halfMoveClock;
+	private int fullMoveClock;
 
 	private class State {
 		public final int castlingPermissions;
@@ -74,6 +76,7 @@ public class ChessBoard {
 		this.enPassantPosition = Position.NULL_POSITION;
 		this.activeColor = ChessColor.WHITE.value();
 		this.halfMoveClock = 0;
+		this.fullMoveClock = 1;
 	}
 
 	/**
@@ -110,6 +113,15 @@ public class ChessBoard {
 	 */
 	public int getHalfTurnClock() {
 		return halfMoveClock;
+	}
+
+	/**
+	 * Returns the full move turn clock
+	 * 
+	 * @return the full move turn clock
+	 */
+	public int getFullMoveClock() {
+		return fullMoveClock;
 	}
 
 	/**
@@ -259,8 +271,29 @@ public class ChessBoard {
 	 * @return true if the given color is in check in this position
 	 */
 	public boolean isCheck(int color) {
-		return isAttacked(pieces[color][PieceType.KING.value()].getSingle(),
-				ChessColor.opposite(color));
+		return pieces[color][PieceType.KING.value()].size() > 0 && isAttacked(
+				pieces[color][PieceType.KING.value()].getSingle(), ChessColor.opposite(color));
+	}
+
+	/**
+	 * Returns true if at least one side has sufficient material to check mate
+	 * the other
+	 * 
+	 * @return true if at least one side has sufficient material to check mate
+	 *         the other
+	 */
+	public boolean hasSufficientMaterial() {
+		boolean result = true;
+		for (ChessColor color : ChessColor.values()) {
+			for (PieceType type : EnumSet.of(PieceType.PAWN, PieceType.ROOK, PieceType.QUEEN)) {
+				result &= pieces[color.value()][type.value()].size() == 0;
+			}
+
+			result &= pieces[color.value()][PieceType.BISHOP.value()].size()
+					+ pieces[color.value()][PieceType.KNIGHT.value()].size() <= 1;
+		}
+
+		return result;
 	}
 
 	/**
@@ -290,7 +323,8 @@ public class ChessBoard {
 	public int evaluate() {
 		int material = 0;
 		for (PieceType type : PieceType.values()) {
-			material += type.score() * pieces[activeColor][type.value()].size();
+			material += type.score() * (pieces[activeColor][type.value()].size()
+					- pieces[ChessColor.opposite(activeColor)][type.value()].size());
 		}
 
 		int mobility = 0;
@@ -632,7 +666,11 @@ public class ChessBoard {
 			this.enPassantPosition = Position.NULL_POSITION;
 		}
 
-		// flip color and update half move clock
+		// flip color, update half move clock, and full move clock
+		if (this.activeColor == ChessColor.BLACK.value()) {
+			this.fullMoveClock++;
+		}
+
 		this.activeColor = ChessColor.opposite(activeColor);
 		if (endPiece != ChessPiece.NULL_PIECE
 				|| ChessPiece.getPieceType(startPiece) == PieceType.PAWN.value()) {
@@ -683,6 +721,9 @@ public class ChessBoard {
 	private void unmove(int startPos, int endPos, int startPiece, int startColor, int endPiece,
 			int moveType, int promotionType) {
 		this.activeColor = ChessColor.opposite(activeColor);
+		if (this.activeColor == ChessColor.BLACK.value()) {
+			this.fullMoveClock++;
+		}
 
 		if (moveType == Move.Flags.CASTLE.value()) {
 			int castlingRookStart = Position.NULL_POSITION;
@@ -800,10 +841,91 @@ public class ChessBoard {
 			return board;
 		}
 
-		// TODO (Optional) Implement chessboard from fen string
 		public static ChessBoard fromFEN(String fen) {
-			throw new UnsupportedOperationException();
+			ChessBoard position = new ChessBoard();
+			String[] majorComponents = fen.split("\\s");
+
+			Position.File aFile = Position.File.F_A;
+			int pos = Position.from(aFile, Position.Rank.R_8);
+			String board = majorComponents[0].replace('/', '\0');
+			char charIndex = '\0';
+			for (int i = 0; i < board.length(); i++) {
+				charIndex = board.charAt(i);
+				if (Character.isAlphabetic(charIndex)) {
+					int color = (Character.isLowerCase(charIndex)) ? ChessColor.BLACK.value()
+							: ChessColor.WHITE.value();
+					position.set(pos, ChessPiece.fromRaw(color, PieceType.from(charIndex).value()));
+					pos += Position.E;
+				} else if (Character.isDigit(charIndex)) {
+					int skip = Character.getNumericValue(charIndex);
+					pos += (Position.E * skip);
+				}
+
+				if (!Position.isValid(pos)) {
+					if (pos > 0x10) {
+						pos = Position.from(aFile.value(), Position.getRank(pos) - 1);
+					} else if (0x7 < pos && pos < 0x10) {
+						break;
+					}
+				}
+
+			}
+
+			int activeColor = majorComponents[1].equals("w") ? ChessColor.WHITE.value()
+					: ChessColor.BLACK.value();
+
+			int castlingPermissions = CastlingBitFlags.NO_CASTLING;
+			EnumSet<CastlingBitFlags> flags = EnumSet.noneOf(CastlingBitFlags.class);
+			if (majorComponents[2].matches("K")) {
+				flags.add(CastlingBitFlags.WHITE_KINGSIDE);
+			}
+			if (majorComponents[2].matches("Q")) {
+				flags.add(CastlingBitFlags.WHITE_QUEENSIDE);
+			}
+			if (majorComponents[2].matches("k")) {
+				flags.add(CastlingBitFlags.BLACK_KINGSIDE);
+			}
+			if (majorComponents[2].matches("q")) {
+				flags.add(CastlingBitFlags.BLACK_QUEENSIDE);
+			}
+			castlingPermissions = CastlingBitFlags.value(flags);
+
+			int enPassantPosition = Position.NULL_POSITION;
+			if (!majorComponents[3].equals("-")) {
+				int file = majorComponents[3].charAt(0) - 97;
+				int rank = Character.getNumericValue(majorComponents[3].charAt(1)) - 1;
+				enPassantPosition = Position.from(file, rank);
+			}
+
+			int halfMoveClock = Integer.valueOf(majorComponents[4]);
+			int fullMoveClock = Integer.valueOf(majorComponents[5]);
+
+			position.activeColor = activeColor;
+			position.castlingPermissions = castlingPermissions;
+			position.enPassantPosition = enPassantPosition;
+			position.halfMoveClock = halfMoveClock;
+			position.fullMoveClock = fullMoveClock;
+
+			return position;
 		}
 
+		public static void main(String[] args) {
+			ChessBoard position =
+					ChessBoard.ChessBoardFactory.fromFEN("8/6p1/8/8/8/8/1Q6/8 w - - 0 1");
+
+			for (ChessColor color : ChessColor.values()) {
+				for (PieceType type : PieceType.values()) {
+					System.err.println(ChessPiece.from(color, type));
+					System.err.println(ChessNotation.convertBitBoardToString(
+							position.getPieces(color.value(), type.value()).value()));
+					for (Integer pos : position.getPieces(color.value(), type.value())) {
+						System.err.print(Position.toString(pos));
+					}
+					if (position.getPieces(color.value(), type.value()).size() > 0) {
+						System.err.println();
+					}
+				}
+			}
+		}
 	}
 }

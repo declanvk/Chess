@@ -371,7 +371,7 @@ public class Position {
 	 *         containing valid positions
 	 */
 	public static int getPosition(int index) {
-		assert index > -1 && index < positions.length;
+		assert -1 < index && index < positions.length;
 
 		return positions[index];
 	}

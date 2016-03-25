@@ -105,6 +105,25 @@ public enum PieceType {
 		return PieceType.values()[type];
 	}
 
+	public static PieceType from(char repr) {
+		if (repr == 'p' || repr == 'P') {
+			return PieceType.PAWN;
+		} else if (repr == 'n' || repr == 'N') {
+			return PieceType.KNIGHT;
+		} else if (repr == 'b' || repr == 'B') {
+			return PieceType.BISHOP;
+		} else if (repr == 'r' || repr == 'R') {
+			return PieceType.ROOK;
+		} else if (repr == 'q' || repr == 'Q') {
+			return PieceType.QUEEN;
+		} else if (repr == 'k' || repr == 'K') {
+			return PieceType.KING;
+		} else {
+			assert false;
+			return null;
+		}
+	}
+
 	/**
 	 * Returns the score value of the given serialized value
 	 * 
