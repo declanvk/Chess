@@ -17,10 +17,7 @@ import util.Pair;
  */
 public class Search {
 
-	private static final int CHECKMATE = -1;
-	private static final int DRAW = 0;
-
-	private static final int SEARCH_DEPTH = 4;
+	private static final int SEARCH_DEPTH = 5;
 	private static final int[] color = { 1, -1 };
 
 	/**
@@ -36,10 +33,9 @@ public class Search {
 		ArrayList<Pair<Integer, Integer>> movesWithValues = new ArrayList<Pair<Integer, Integer>>();
 		for (Integer move : moves) {
 			position.move(move);
-			movesWithValues.add(new Pair<Integer, Integer>(move,
-					color[position.getActiveColor()]
-							* search(position, SEARCH_DEPTH - 1, Integer.MIN_VALUE,
-									Integer.MAX_VALUE, color[position.getActiveColor()])));
+			int value = negaMax(position, SEARCH_DEPTH);
+			movesWithValues.add(
+					new Pair<Integer, Integer>(move, color[position.getActiveColor()] * value));
 			position.unmove(move);
 		}
 
@@ -55,47 +51,62 @@ public class Search {
 		return Move.from(movesWithValues.get(0).first());
 	}
 
-	private static int search(ChessBoard position, int depth, int alpha, int beta, int color) {
-		if (depth == 0) {
-			return quiesce(position, alpha, beta);
-		}
-
+	private static int negaMax(ChessBoard position, int depth) {
 		int best = Integer.MIN_VALUE;
+
+		if (depth <= 0) {
+			return position.evaluate();
+		}
 		for (Integer move : MoveGeneration.getMoves(position, false)) {
 			position.move(move);
-			int value = -search(position, depth - 1, -beta, -alpha, -color);
+			int value = -negaMax(position, depth - 1);
 			position.unmove(move);
-			best = Math.max(best, value);
-			alpha = Math.max(alpha, value);
-			if (alpha >= beta) {
-				break;
+			if (value > best) {
+				best = value;
 			}
 		}
 
 		return best;
 	}
 
-	private static int quiesce(ChessBoard position, int alpha, int beta) {
-		int stand_pat = position.evaluate();
-		if (stand_pat >= beta) {
-			return beta;
-		} else if (alpha < stand_pat) {
-			alpha = stand_pat;
+	private static int alphaBeta(ChessBoard position, int depth, int alpha, int beta) {
+		boolean hasPV = false;
+		if (depth <= 0) {
+			return position.evaluate();
 		}
-
 		for (Integer move : MoveGeneration.getMoves(position, false)) {
 			position.move(move);
-			int value = -quiesce(position, -beta, -alpha);
+			int value = 0;
+			if (hasPV) {
+				value = -alphaBeta(position, depth - 1, -alpha - 1, -alpha);
+				if (value > alpha && value < beta) {
+					value = -alphaBeta(position, depth - 1, -beta, -alpha);
+				}
+			} else {
+				value = -alphaBeta(position, depth - 1, -beta, -alpha);
+			}
 			position.unmove(move);
-
 			if (value >= beta) {
 				return beta;
-			} else if (value > alpha) {
+			}
+			if (value > alpha) {
 				alpha = value;
 			}
 		}
 
 		return alpha;
+	}
+
+	public static void main(String[] args) {
+		ChessBoard position =
+				ChessBoard.ChessBoardFactory.fromFEN("8/1b4p1/8/8/8/8/1Q6/8 w - - 0 1");
+		for (Integer m : MoveGeneration.getMoves(position, false)) {
+			System.out.println(Move.from(m));
+			position.move(m);
+			System.out.printf("TOTAL: %d\n\n",
+					(color[position.getActiveColor()]) * negaMax(position, 1));
+			position.unmove(m);
+		}
 	}
 
 }

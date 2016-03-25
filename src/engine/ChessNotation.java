@@ -11,8 +11,10 @@ public class ChessNotation {
 	 * @return the given String representation of the given raw Bitboard
 	 */
 	public static String convertBitBoardToString(long board) {
+		board = mirrorHorizontal(board);
 		String sBoard = Long.toBinaryString(board);
-		sBoard = new String(new char[Long.numberOfLeadingZeros(board)]).replace('\0', '0') + sBoard;
+		sBoard = new String(new char[Long.numberOfLeadingZeros(board)]).replace('\0', '0')
+				+ (board > 0 ? sBoard : "");
 
 		String[] characters = sBoard.split("(?<=\\G.{1})");
 		sBoard = "";
@@ -54,6 +56,17 @@ public class ChessNotation {
 			result += "\n";
 		}
 		return result;
+	}
+
+	private static final long k1 = 0x5555555555555555L;
+	private static final long k2 = 0x3333333333333333L;
+	private static final long k4 = 0x0f0f0f0f0f0f0f0fL;
+
+	private static long mirrorHorizontal(long x) {
+		x = ((x >> 1) & k1) | ((x & k1) << 1);
+		x = ((x >> 2) & k2) | ((x & k2) << 2);
+		x = ((x >> 4) & k4) | ((x & k4) << 4);
+		return x;
 	}
 
 	public static void main(String[] args) {
