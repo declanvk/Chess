@@ -1,7 +1,5 @@
 package engine;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -42,22 +40,6 @@ public class Search {
 		continueSearch = true;
 	}
 
-	private SearchLogger createLogger(ChessBoard position) {
-		int count = 0;
-		File out;
-		do {
-			out = new File("log/search" + count + ".log");
-			count++;
-		} while (out.exists());
-
-		try {
-			out.createNewFile();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return new SearchLogger(out, delay, position.getZobristKey().getKey());
-	}
-
 	/**
 	 * Given the initial position, determines the best Move for the currently
 	 * active color
@@ -71,7 +53,7 @@ public class Search {
 		ArrayList<Pair<Integer, Integer>> movesWithValues = new ArrayList<Pair<Integer, Integer>>();
 		TranspositionTable table = new TranspositionTable(16);
 
-		SearchLogger searchLog = createLogger(position);
+		SearchLogger searchLog = new SearchLogger(delay, position.getZobristKey().getKey());
 
 		this.continueSearch = true;
 		ScheduledFuture<?> task = timer.schedule(new Runnable() {
@@ -85,6 +67,7 @@ public class Search {
 
 		for (int searchDepth = 1; continueSearch && searchDepth < MAX_SEARCH_DEPTH; searchDepth++) {
 			searchLog.logIterativeDeepeningLevel(searchDepth);
+			movesWithValues.clear();
 
 			for (Integer move : moves) {
 				position.move(move);
@@ -140,11 +123,11 @@ public class Search {
 		if (depth <= 0) {
 			int eval = color * position.evaluate();
 
-			log.logTerminal(ply, Integer.toString(eval), position.getZobristKey().getKey(), depth);
+			log.logTerminal(ply, Integer.toString(eval), position.getZobristKey().getKey());
 
 			return eval;
 		} else if (position.hasInsufficientMaterial() || position.getHalfTurnClock() >= 100) {
-			log.logTerminal(ply, "DRAW", position.getZobristKey().getKey(), depth);
+			log.logTerminal(ply, "DRAW", position.getZobristKey().getKey());
 
 			return DRAW;
 		}

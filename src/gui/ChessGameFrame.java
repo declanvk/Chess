@@ -77,8 +77,8 @@ public class ChessGameFrame extends JFrame implements Runnable {
 			this.black = new HumanPlayer("Black Human player", ChessColor.BLACK.value(), board,
 					boardPanel);
 		} else if ("AI - RANDOM".equals(chosen)) {
-			this.white = new ArtificialPlayer("White AI player", ChessColor.WHITE.value(), board,
-					3000L);
+			this.white =
+					new ArtificialPlayer("White AI player", ChessColor.WHITE.value(), board, 30L);
 			this.black = new RandomPlayer("Black Random player", ChessColor.BLACK.value(), board);
 		} else if ("AI - AI".equals(chosen)) {
 			this.white = new ArtificialPlayer("White AI player", ChessColor.WHITE.value(), board,
@@ -148,7 +148,8 @@ public class ChessGameFrame extends JFrame implements Runnable {
 				@Override
 				public void propertyChange(PropertyChangeEvent evt) {
 					Move move = (Move) evt.getNewValue();
-					System.err.println((playerToggle ? ChessColor.from(black.color) : ChessColor.from(white.color)) + ": " + move);
+					System.err.println((playerToggle ? ChessColor.from(black.color)
+							: ChessColor.from(white.color)) + ": " + move);
 					board.move(move);
 					panel.repaint();
 
@@ -163,6 +164,10 @@ public class ChessGameFrame extends JFrame implements Runnable {
 								"The " + ChessColor
 										.from(ChessColor.opposite(board.getActiveColor()))
 								+ " player has won!");
+						return;
+					} else if (board.isRepetition() || board.hasInsufficientMaterial()
+							|| board.getHalfTurnClock() >= 100) {
+						JOptionPane.showMessageDialog(null, "The game is a draw.");
 						return;
 					}
 

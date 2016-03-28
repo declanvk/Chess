@@ -35,19 +35,14 @@ public class MoveList implements Iterable<Integer> {
 				continue;
 			}
 
-			if (Move.getFlags(move) == Flags.QUIET.value()
-					|| Move.getFlags(move) == Flags.DOUBLE_PAWN_PUSH.value()
-					|| Move.getFlags(move) == Flags.CASTLE.value()) {
+			if (Move.getEndPiece(move) == ChessPiece.NULL_PIECE) {
 				this.quiet.add(move);
-			} else if (Move.getFlags(move) == Flags.CAPTURE.value()
-					|| Move.getEndPiece(move) != ChessPiece.NULL_PIECE) {
-				this.captures.add(move);
 			} else {
-				assert false;
+				this.captures.add(move);
 			}
 		}
 
-		if (pv != null) {
+		if (pv != null && pv.bestMove != Move.NULL_MOVE) {
 			this.moves.add(pv.bestMove);
 		}
 

@@ -14,9 +14,29 @@ import engine.TranspositionTable.TranspositionType;
 
 public class SearchLogger {
 
+	private static File outputFolder;
+
+	static {
+		int count = 0;
+		File folder;
+		do {
+			folder = new File("log/run" + count);
+			count++;
+		} while (folder.exists());
+		outputFolder = folder;
+		outputFolder.mkdirs();
+	}
+
 	private PrintStream output;
 
-	public SearchLogger(File out, long delay, long key) {
+	public SearchLogger(long delay, long key) {
+		int count = 0;
+		File out;
+		do {
+			out = new File(outputFolder, "search" + count + ".log");
+			count++;
+		} while (out.exists());
+
 		try {
 			this.output = new PrintStream(new FileOutputStream(out), true);
 		} catch (FileNotFoundException e) {
@@ -25,14 +45,14 @@ public class SearchLogger {
 
 		output.printf("Logging Search with delay of %d milliseconds and key %d\n", delay, key);
 	}
-	
+
 	public void logIterativeDeepeningLevel(int level) {
 		output.printf("Searching to depth of %d\n", level);
 	}
 
-	public void logTerminal(int ply, String value, long positionKey, int depth) {
+	public void logTerminal(int ply, String value, long positionKey) {
 		indent(ply);
-		output.printf("Evaluating %d to %s at depth %d\n", positionKey, value, depth);
+		output.printf("Evaluating %d to %s at ply %d\n", positionKey, value, ply);
 	}
 
 	public void logTranspositionHit(int ply, Transposition entry) {

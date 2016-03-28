@@ -314,6 +314,17 @@ public class ChessBoard {
 		return result;
 	}
 
+	public boolean isRepetition() {
+		int j = Math.max(0, stateIndex - halfMoveClock);
+		for (int i = stateIndex - 2; i >= j; i -= 2) {
+			if (key.getKey() == savedStates[i].zobristKey) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	/**
 	 * Evaluate the given move using the context of the position and static
 	 * exchange evaluation. This calculates the likely material change to be
@@ -589,6 +600,9 @@ public class ChessBoard {
 	 *            the move to make
 	 */
 	public void move(int move) {
+		if (!Move.isValid(move)) {
+			System.err.println(Move.from(move));
+		}
 		assert Move.isValid(move);
 
 		int startPos = Move.getStartPosition(move);
