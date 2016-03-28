@@ -1,10 +1,14 @@
 package engine;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import core.ChessBoard;
 import core.ChessColor;
@@ -22,8 +26,12 @@ import util.Pair;
  */
 public class Search {
 
-	private static final Timer timer = new Timer();
-	private static final int SEARCH_DEPTH = 5;
+	private static final int DRAW = 0;
+	private static final int CHECKMATE = 200000;
+
+	private static final ScheduledExecutorService timer =
+			Executors.newSingleThreadScheduledExecutor();
+	private static final int MAX_SEARCH_DEPTH = 4;
 	private static final int[] color = { 1, -1 };
 
 	private boolean continueSearch;
@@ -32,6 +40,22 @@ public class Search {
 	public Search(long time) {
 		delay = time;
 		continueSearch = true;
+	}
+
+	private SearchLogger createLogger(ChessBoard position) {
+		int count = 0;
+		File out;
+		do {
+			out = new File("log/search" + count + ".log");
+			count++;
+		} while (out.exists());
+
+		try {
+			out.createNewFile();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return new SearchLogger(out, delay, position.getZobristKey().getKey());
 	}
 
 	/**
@@ -47,21 +71,31 @@ public class Search {
 		ArrayList<Pair<Integer, Integer>> movesWithValues = new ArrayList<Pair<Integer, Integer>>();
 		TranspositionTable table = new TranspositionTable(16);
 
-		timer.schedule(new TimerTask() {
+		SearchLogger searchLog = createLogger(position);
+
+		this.continueSearch = true;
+		ScheduledFuture<?> task = timer.schedule(new Runnable() {
 
 			@Override
 			public void run() {
 				continueSearch = false;
 			}
-		}, delay);
 
-		for (int searchDepth = 1; searchDepth < SEARCH_DEPTH; searchDepth++) {
+		}, delay, TimeUnit.MILLISECONDS);
+
+		for (int searchDepth = 1; continueSearch && searchDepth < MAX_SEARCH_DEPTH; searchDepth++) {
+			searchLog.logIterativeDeepeningLevel(searchDepth);
+
 			for (Integer move : moves) {
 				position.move(move);
-				int value = negaMax(position, table, searchDepth, Integer.MIN_VALUE,
-						Integer.MAX_VALUE, color[ChessColor.opposite(position.getActiveColor())]);
+				searchLog.logNewSearchLevel(0, move);
 
+				int value = negaMax(position, table, searchDepth, Integer.MIN_VALUE,
+						Integer.MAX_VALUE, color[ChessColor.opposite(position.getActiveColor())], 1,
+						searchLog);
 				movesWithValues.add(new Pair<Integer, Integer>(move, value));
+
+				searchLog.logSearchLevelReturn(0, move, value);
 				position.unmove(move);
 			}
 		}
@@ -75,15 +109,21 @@ public class Search {
 
 		});
 
+		searchLog.close();
+		task.cancel(true);
+
 		return Move.from(movesWithValues.get(0).first());
 	}
 
-	private static int negaMax(ChessBoard position, TranspositionTable table, int depth, int alpha,
-			int beta, int color) {
+	private int negaMax(ChessBoard position, TranspositionTable table, int depth, int alpha,
+			int beta, int color, int ply, SearchLogger log) {
+
 		int alphaOriginal = alpha;
 
 		Transposition entry = table.get(position.getZobristKey());
-		if (entry != null && entry.depth <= depth) {
+		if (entry != null && entry.depth >= depth) {
+			log.logTranspositionHit(ply, entry);
+
 			if (entry.type == TranspositionType.EXACT.value()) {
 				return entry.value;
 			} else if (entry.type == TranspositionType.LOWER.value()) {
@@ -98,14 +138,28 @@ public class Search {
 		}
 
 		if (depth <= 0) {
-			return color * position.evaluate();
+			int eval = color * position.evaluate();
+
+			log.logTerminal(ply, Integer.toString(eval), position.getZobristKey().getKey(), depth);
+
+			return eval;
+		} else if (position.hasInsufficientMaterial() || position.getHalfTurnClock() >= 100) {
+			log.logTerminal(ply, "DRAW", position.getZobristKey().getKey(), depth);
+
+			return DRAW;
 		}
 
 		int bestValue = Integer.MIN_VALUE;
 		int bestMove = Move.NULL_MOVE;
-		for (Integer move : MoveGeneration.getMoves(position, false)) {
+		MoveList moves = new MoveList(MoveGeneration.getMoves(position, false), position, table);
+		for (Integer move : moves) {
+
 			position.move(move);
-			int value = -negaMax(position, table, depth - 1, -beta, -alpha, -color);
+			log.logNewSearchLevel(ply, move);
+
+			int value = -negaMax(position, table, depth - 1, -beta, -alpha, -color, ply + 1, log);
+
+			log.logSearchLevelReturn(ply, move, value);
 			position.unmove(move);
 			if (value > bestValue) {
 				bestValue = value;

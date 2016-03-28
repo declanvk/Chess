@@ -10,32 +10,32 @@ public enum PieceType {
 	/**
 	 * The pawn
 	 */
-	PAWN(100),
+	PAWN(100, "P"),
 
 	/**
 	 * The knight
 	 */
-	KNIGHT(325),
+	KNIGHT(325, "N"),
 
 	/**
 	 * The bishop
 	 */
-	BISHOP(325),
+	BISHOP(325, "B"),
 
 	/**
 	 * The rook
 	 */
-	ROOK(500),
+	ROOK(500, "R"),
 
 	/**
 	 * The queen
 	 */
-	QUEEN(975),
+	QUEEN(975, "Q"),
 
 	/**
 	 * The king
 	 */
-	KING(20000);
+	KING(20000, "K");
 
 	/**
 	 * The serialized value representing no promotion
@@ -43,9 +43,11 @@ public enum PieceType {
 	public final static int NULL_PROMOTION = 6;
 
 	private final int score;
+	private final String repr;
 
-	PieceType(int val) {
+	PieceType(int val, String repr) {
 		this.score = val;
+		this.repr = repr;
 	}
 
 	/**
@@ -55,6 +57,16 @@ public enum PieceType {
 	 */
 	public int score() {
 		return this.score;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Enum#toString()
+	 */
+	@Override
+	public String toString() {
+		return repr;
 	}
 
 	/**

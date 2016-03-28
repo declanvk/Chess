@@ -10,68 +10,54 @@ import core.Move;
 import core.Move.Flags;
 import engine.TranspositionTable.Transposition;
 
-public class MoveList implements Iterator<Move> {
+public class MoveList implements Iterable<Integer> {
 
 	private final ChessBoard position;
-	private final TranspositionTable table;
 
 	private Transposition pv;
-	private final ArrayList<Move> captures;
-	private final ArrayList<Move> quiet;
+	private final ArrayList<Integer> captures;
+	private final ArrayList<Integer> quiet;
 
-	private final ArrayList<Move> moves;
-	private final Iterator<Move> movesIter;
+	private final ArrayList<Integer> moves;
 
 	public MoveList(List<Integer> moves, ChessBoard position, TranspositionTable table) {
 		this.position = position;
-		this.table = table;
 
-		this.pv = (table.get(position.getZobristKey()).key == position.getZobristKey().getKey())
-				? table.get(position.getZobristKey()) : null;
+		this.pv = (table.get(position.getZobristKey()) != null
+				&& table.get(position.getZobristKey()).key == position.getZobristKey().getKey())
+						? table.get(position.getZobristKey()) : null;
 
-		this.moves = new ArrayList<Move>();
-		this.captures = new ArrayList<Move>();
-		this.quiet = new ArrayList<Move>();
+		this.moves = new ArrayList<Integer>();
+		this.captures = new ArrayList<Integer>();
+		this.quiet = new ArrayList<Integer>();
 		for (Integer move : moves) {
 			if (pv != null && move == pv.bestMove) {
 				continue;
 			}
 
-			Move m = Move.from(move);
-			if (m.getFlags() == Flags.QUIET.value()
-					|| m.getFlags() == Flags.DOUBLE_PAWN_PUSH.value()
-					|| m.getFlags() == Flags.CASTLE.value()) {
-				this.quiet.add(m);
-			} else if (m.getFlags() == Flags.CAPTURE.value()
-					|| m.getEndPiece() != ChessPiece.NULL_PIECE) {
-				this.captures.add(m);
+			if (Move.getFlags(move) == Flags.QUIET.value()
+					|| Move.getFlags(move) == Flags.DOUBLE_PAWN_PUSH.value()
+					|| Move.getFlags(move) == Flags.CASTLE.value()) {
+				this.quiet.add(move);
+			} else if (Move.getFlags(move) == Flags.CAPTURE.value()
+					|| Move.getEndPiece(move) != ChessPiece.NULL_PIECE) {
+				this.captures.add(move);
 			} else {
 				assert false;
 			}
 		}
 
 		if (pv != null) {
-			this.moves.add(Move.from(pv.bestMove));
+			this.moves.add(pv.bestMove);
 		}
 
 		this.moves.addAll(captures);
 		this.moves.addAll(quiet);
-		this.movesIter = this.moves.iterator();
 	}
 
 	@Override
-	public boolean hasNext() {
-		return movesIter.hasNext();
-	}
-
-	@Override
-	public Move next() {
-		return movesIter.next();
-	}
-
-	@Override
-	public void remove() {
-		throw new UnsupportedOperationException();
+	public Iterator<Integer> iterator() {
+		return moves.iterator();
 	}
 
 }

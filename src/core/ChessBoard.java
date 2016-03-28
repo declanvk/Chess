@@ -294,13 +294,13 @@ public class ChessBoard {
 	}
 
 	/**
-	 * Returns true if at least one side has sufficient material to check mate
+	 * Returns true if at least one side has insufficient material to check mate
 	 * the other
 	 * 
-	 * @return true if at least one side has sufficient material to check mate
+	 * @return true if at least one side has insufficient material to check mate
 	 *         the other
 	 */
-	public boolean hasSufficientMaterial() {
+	public boolean hasInsufficientMaterial() {
 		boolean result = true;
 		for (ChessColor color : ChessColor.values()) {
 			for (PieceType type : EnumSet.of(PieceType.PAWN, PieceType.ROOK, PieceType.QUEEN)) {
