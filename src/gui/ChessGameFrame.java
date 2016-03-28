@@ -59,8 +59,35 @@ public class ChessGameFrame extends JFrame implements Runnable {
 		this.boardPanel = new ChessBoardPanel(name + " Board", board);
 		add(this.boardPanel);
 
-		this.white = new HumanPlayer("White player", ChessColor.WHITE.value(), boardPanel);
-		this.black = new ArtificialPlayer("Black player", ChessColor.BLACK.value(), 30000L);
+		String[] options =
+				new String[] { "PLAYER - AI", "PLAYER - PLAYER", "AI - RANDOM", "AI - AI" };
+		int chosenIndex = JOptionPane.showOptionDialog(null, "Choose play configuration",
+				"Choose Play Type", JOptionPane.OK_OPTION, JOptionPane.QUESTION_MESSAGE, null,
+				options, "PLAYER - AI");
+		String chosen = options[chosenIndex != -1 ? chosenIndex : 0];
+
+		if ("PLAYER - AI".equals(chosen)) {
+			this.white = new HumanPlayer("White Human player", ChessColor.WHITE.value(), board,
+					boardPanel);
+			this.black = new ArtificialPlayer("Black AI player", ChessColor.BLACK.value(), board,
+					30000L);
+		} else if ("PLAYER - PLAYER".equals(chosen)) {
+			this.white = new HumanPlayer("White Human player", ChessColor.WHITE.value(), board,
+					boardPanel);
+			this.black = new HumanPlayer("Black Human player", ChessColor.BLACK.value(), board,
+					boardPanel);
+		} else if ("AI - RANDOM".equals(chosen)) {
+			this.white = new ArtificialPlayer("White AI player", ChessColor.WHITE.value(), board,
+					30000L);
+			this.black = new RandomPlayer("Black Random player", ChessColor.BLACK.value(), board);
+		} else if ("AI - AI".equals(chosen)) {
+			this.white = new ArtificialPlayer("White AI player", ChessColor.WHITE.value(), board,
+					30000L);
+			this.black =
+					new ArtificialPlayer("Black AI player", ChessColor.BLACK.value(), board, 300L);
+		} else {
+			assert false;
+		}
 
 		GameThread gameThread = new GameThread(this.white, this.black, board, this);
 		SwingUtilities.invokeLater(gameThread);
@@ -158,9 +185,9 @@ public class ChessGameFrame extends JFrame implements Runnable {
 		private void startCurrentPlayerTurn() {
 			(playerToggle ? black : white).addMoveListener(changeListener);
 			if (playerToggle) {
-				black.startTurn(board);
+				black.startTurn();
 			} else {
-				white.startTurn(board);
+				white.startTurn();
 			}
 		}
 

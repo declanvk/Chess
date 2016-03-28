@@ -5,6 +5,7 @@ import java.util.Random;
 
 import javax.swing.SwingUtilities;
 
+import core.ChessBoard;
 import core.Move;
 import engine.MoveGeneration;
 
@@ -27,8 +28,8 @@ public class RandomPlayer extends Player {
 	 * @param color
 	 *            the color of the RandomPlayer
 	 */
-	public RandomPlayer(String name, int color) {
-		super(name, color);
+	public RandomPlayer(String name, int color, ChessBoard board) {
+		super(name, color, board);
 		rGen = new Random();
 	}
 

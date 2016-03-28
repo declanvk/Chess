@@ -34,9 +34,10 @@ public abstract class Player {
 	 * @param color
 	 *            the color of the Player
 	 */
-	public Player(String name, int color) {
+	public Player(String name, int color, ChessBoard input) {
 		this.name = name;
 		this.color = color;
+		this.input = input;
 	}
 
 	/**
@@ -90,12 +91,8 @@ public abstract class Player {
 	/**
 	 * Start the Player's turn with the provided input. The input is only valid
 	 * for the duration of the turn
-	 * 
-	 * @param input
-	 *            the input that the player requires
 	 */
-	public void startTurn(ChessBoard input) {
-		this.input = input;
+	public void startTurn() {
 		this.startTurnProtected();
 	}
 
@@ -105,7 +102,6 @@ public abstract class Player {
 	 */
 	public void endTurn() {
 		this.endTurnProtected();
-		this.input = null;
 	}
 
 	/**

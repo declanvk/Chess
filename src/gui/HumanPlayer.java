@@ -8,6 +8,7 @@ import java.util.HashMap;
 
 import javax.swing.JOptionPane;
 
+import core.ChessBoard;
 import core.ChessColor;
 import core.ChessPiece;
 import core.Move;
@@ -37,8 +38,8 @@ public class HumanPlayer extends Player {
 	 * @param game
 	 *            the internal board representation for the HumanPlayer
 	 */
-	public HumanPlayer(String name, int color, ChessBoardPanel panel) {
-		super(name, color);
+	public HumanPlayer(String name, int color, ChessBoard board, ChessBoardPanel panel) {
+		super(name, color, board);
 
 		this.panel = panel;
 		this.adapter = new PlayerAdapter(ChessColor.from(color));
