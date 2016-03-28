@@ -5,7 +5,6 @@ import java.util.Random;
 
 import javax.swing.SwingUtilities;
 
-import core.ChessBoard;
 import core.Move;
 import engine.MoveGeneration;
 
@@ -16,7 +15,7 @@ import engine.MoveGeneration;
  * @author declan
  *
  */
-public class RandomPlayer extends Player<ChessBoard> {
+public class RandomPlayer extends Player {
 
 	private final Random rGen;
 

@@ -4,6 +4,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayDeque;
 
+import core.ChessBoard;
 import core.Move;
 
 /**
@@ -15,7 +16,7 @@ import core.Move;
  * @param <I>
  *            player input
  */
-public abstract class Player<I> {
+public abstract class Player {
 
 	private final PropertyChangeSupport mPcs = new PropertyChangeSupport(this);
 	private final ArrayDeque<Move> movesMade = new ArrayDeque<Move>();
@@ -23,7 +24,7 @@ public abstract class Player<I> {
 	protected final String name;
 	protected final int color; // 0 -> white, 1 -> black
 
-	protected I input;
+	protected ChessBoard input;
 
 	/**
 	 * Constructs a new Player
@@ -93,7 +94,7 @@ public abstract class Player<I> {
 	 * @param input
 	 *            the input that the player requires
 	 */
-	public void startTurn(I input) {
+	public void startTurn(ChessBoard input) {
 		this.input = input;
 		this.startTurnProtected();
 	}

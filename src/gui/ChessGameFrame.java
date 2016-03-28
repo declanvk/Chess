@@ -56,18 +56,18 @@ public class ChessGameFrame extends JFrame implements Runnable {
 	private void createComponents() {
 		String name = "Chess";
 		ChessBoard board = ChessBoard.ChessBoardFactory.startingBoard();
-		this.white = new HumanPlayer("White player", ChessColor.WHITE.value(), board);
-		this.black = new ArtificialPlayer("Black player", ChessColor.BLACK.value());
 		this.boardPanel = new ChessBoardPanel(name + " Board", board);
-
 		add(this.boardPanel);
-		GameThread<ChessBoardPanel, ChessBoard> gameThread = new GameThread<ChessBoardPanel, ChessBoard>(
-				this.white, this.black, boardPanel, board, board, this);
+
+		this.white = new HumanPlayer("White player", ChessColor.WHITE.value(), boardPanel);
+		this.black = new ArtificialPlayer("Black player", ChessColor.BLACK.value(), 30000L);
+
+		GameThread gameThread = new GameThread(this.white, this.black, board, this);
 		SwingUtilities.invokeLater(gameThread);
 	}
 
 	/**
-	 * The game thread will manage the state of the game, updating the players
+	 * r The game thread will manage the state of the game, updating the players
 	 * with each new move, maintaining the overall state of the board, and
 	 * checking for the end of the game
 	 * 
@@ -78,12 +78,10 @@ public class ChessGameFrame extends JFrame implements Runnable {
 	 * @param <B>
 	 *            the input that the Black player will take
 	 */
-	private final class GameThread<W, B> implements Runnable {
+	private final class GameThread implements Runnable {
 
-		private final Player<W> white;
-		private final Player<B> black;
-		private final W whiteInput;
-		private final B blackInput;
+		private final Player white;
+		private final Player black;
 		private final PropertyChangeListener changeListener;
 
 		private final ChessBoard board;
@@ -110,12 +108,9 @@ public class ChessGameFrame extends JFrame implements Runnable {
 		 * @param frame
 		 *            top level GUI frame
 		 */
-		public GameThread(Player<W> w, Player<B> b, W whiteIn, B blackIn, ChessBoard g,
-				final ChessGameFrame frame) {
+		public GameThread(Player w, Player b, ChessBoard g, final ChessGameFrame frame) {
 			this.white = w;
 			this.black = b;
-			this.whiteInput = whiteIn;
-			this.blackInput = blackIn;
 			this.board = g;
 			this.panel = frame.boardPanel;
 			this.frame = frame;
@@ -163,9 +158,9 @@ public class ChessGameFrame extends JFrame implements Runnable {
 		private void startCurrentPlayerTurn() {
 			(playerToggle ? black : white).addMoveListener(changeListener);
 			if (playerToggle) {
-				black.startTurn(blackInput);
+				black.startTurn(board);
 			} else {
-				white.startTurn(whiteInput);
+				white.startTurn(board);
 			}
 		}
 

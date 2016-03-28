@@ -2,7 +2,6 @@ package gui;
 
 import javax.swing.SwingUtilities;
 
-import core.ChessBoard;
 import core.Move;
 import engine.Search;
 
@@ -12,7 +11,9 @@ import engine.Search;
  * @author declan
  *
  */
-public class ArtificialPlayer extends Player<ChessBoard> {
+public class ArtificialPlayer extends Player {
+
+	private final Search search;
 
 	/**
 	 * Constructs a new ArtificalPlayer with the given name and color
@@ -22,8 +23,9 @@ public class ArtificialPlayer extends Player<ChessBoard> {
 	 * @param color
 	 *            the color of the ArtificialPlayer
 	 */
-	public ArtificialPlayer(String name, int color) {
+	public ArtificialPlayer(String name, int color, long time) {
 		super(name, color);
+		this.search = new Search(time);
 	}
 
 	/*
@@ -46,7 +48,7 @@ public class ArtificialPlayer extends Player<ChessBoard> {
 
 			@Override
 			public void run() {
-				submitMove(Search.search(input));
+				submitMove(search.execute(input));
 			}
 
 		});

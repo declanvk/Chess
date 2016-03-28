@@ -8,7 +8,6 @@ import java.util.HashMap;
 
 import javax.swing.JOptionPane;
 
-import core.ChessBoard;
 import core.ChessColor;
 import core.ChessPiece;
 import core.Move;
@@ -22,10 +21,10 @@ import engine.MoveGeneration;
  * @author declan
  *
  */
-public class HumanPlayer extends Player<ChessBoardPanel> {
+public class HumanPlayer extends Player {
 
 	private final PlayerAdapter adapter;
-	private final ChessBoard game;
+	private final ChessBoardPanel panel;
 	private HashMap<Integer, ArrayList<Move>> positionMoveMap;
 
 	/**
@@ -38,12 +37,12 @@ public class HumanPlayer extends Player<ChessBoardPanel> {
 	 * @param game
 	 *            the internal board representation for the HumanPlayer
 	 */
-	public HumanPlayer(String name, int color, ChessBoard game) {
+	public HumanPlayer(String name, int color, ChessBoardPanel panel) {
 		super(name, color);
 
-		this.game = game;
+		this.panel = panel;
 		this.adapter = new PlayerAdapter(ChessColor.from(color));
-		this.positionMoveMap = MoveGeneration.getSortedMoves(game);
+		this.positionMoveMap = MoveGeneration.getSortedMoves(this.input);
 	}
 
 	/*
@@ -53,7 +52,7 @@ public class HumanPlayer extends Player<ChessBoardPanel> {
 	 */
 	@Override
 	public void updateWith(Move m) {
-		positionMoveMap = MoveGeneration.getSortedMoves(game);
+		positionMoveMap = MoveGeneration.getSortedMoves(input);
 	}
 
 	/*
@@ -63,7 +62,7 @@ public class HumanPlayer extends Player<ChessBoardPanel> {
 	 */
 	@Override
 	protected void startTurnProtected() {
-		input.addMouseListener(adapter);
+		panel.addMouseListener(adapter);
 	}
 
 	/*
@@ -73,7 +72,7 @@ public class HumanPlayer extends Player<ChessBoardPanel> {
 	 */
 	@Override
 	protected void endTurnProtected() {
-		input.removeMouseListener(adapter);
+		panel.removeMouseListener(adapter);
 	}
 
 	/*
@@ -126,8 +125,8 @@ public class HumanPlayer extends Player<ChessBoardPanel> {
 		@Override
 		public void mouseClicked(MouseEvent e) {
 			super.mouseClicked(e);
-			int pos = input.getPositionContaining(e.getPoint());
-			ChessPiece piece = game.getObject(pos);
+			int pos = panel.getPositionContaining(e.getPoint());
+			ChessPiece piece = input.getObject(pos);
 			if (!state && pos != Position.NULL_POSITION && piece != null
 					&& piece.getColor() == color) {
 				ArrayList<Move> moves = positionMoveMap.get(pos);
@@ -141,16 +140,16 @@ public class HumanPlayer extends Player<ChessBoardPanel> {
 					}
 				}
 
-				input.addColorPositions(new ArrayList<Integer>(positionsToMoves.keySet()),
+				panel.addColorPositions(new ArrayList<Integer>(positionsToMoves.keySet()),
 						possibleMovesColor);
-				input.repaint();
+				panel.repaint();
 
 				if (moveCount > 0) {
 					state = true;
 				}
 			} else if (state) {
-				input.clearColorPositions();
-				input.repaint();
+				panel.clearColorPositions();
+				panel.repaint();
 
 				if (pos != -1 && positionsToMoves.containsKey(pos)) {
 					Move move = positionsToMoves.get(pos);
@@ -168,7 +167,6 @@ public class HumanPlayer extends Player<ChessBoardPanel> {
 								move.getStartPosition(), move.getEndPosition(), move.getFlags(),
 								type.value());
 					}
-					System.err.println(move);
 					submitMove(move);
 					state = false;
 				} else {
