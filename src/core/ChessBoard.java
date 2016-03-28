@@ -36,15 +36,19 @@ public class ChessBoard {
 	private int halfMoveClock;
 	private int fullMoveClock;
 
+	private ZobristKey key;
+
 	private class State {
 		public final int castlingPermissions;
 		public final int enPassantPosition;
 		public final int halfMoveClock;
+		public final long zobristKey;
 
-		public State(int castling, int enPassant, int clock) {
+		public State(int castling, int enPassant, int clock, long key) {
 			this.castlingPermissions = castling;
 			this.enPassantPosition = enPassant;
 			this.halfMoveClock = clock;
+			this.zobristKey = key;
 		}
 	}
 
@@ -69,7 +73,7 @@ public class ChessBoard {
 
 		// TODO Implement a standard for this and a class with this as a
 		// constant
-		this.savedStates = new State[4096];
+		this.savedStates = new State[1024];
 		this.stateIndex = 0;
 
 		this.castlingPermissions = CastlingBitFlags.NO_CASTLING;
@@ -77,6 +81,7 @@ public class ChessBoard {
 		this.activeColor = ChessColor.WHITE.value();
 		this.halfMoveClock = 0;
 		this.fullMoveClock = 1;
+		this.key = new ZobristKey();
 	}
 
 	/**
@@ -122,6 +127,15 @@ public class ChessBoard {
 	 */
 	public int getFullMoveClock() {
 		return fullMoveClock;
+	}
+
+	/**
+	 * Returns the Zobrist hash key for this position
+	 * 
+	 * @return the Zobirst hash key for this position
+	 */
+	public ZobristKey getZobristKey() {
+		return key;
 	}
 
 	/**
@@ -196,6 +210,8 @@ public class ChessBoard {
 		occupancy[ChessPiece.getColor(piece)].set(position);
 		occupancy[BOTH_COLOR].set(position);
 
+		key.toggleBoard(position, piece);
+
 		board[position] = piece;
 	}
 
@@ -208,6 +224,8 @@ public class ChessBoard {
 		pieces[ChessPiece.getColor(oldPiece)][ChessPiece.getPieceType(oldPiece)].clear(position);
 		occupancy[ChessPiece.getColor(oldPiece)].clear(position);
 		occupancy[BOTH_COLOR].clear(position);
+
+		key.toggleBoard(position, oldPiece);
 
 		board[position] = ChessPiece.NULL_PIECE;
 
@@ -604,8 +622,8 @@ public class ChessBoard {
 
 	private void move(int startPos, int endPos, int startPiece, int startColor, int endPiece,
 			int flags, int promotionType) {
-		savedStates[stateIndex++] =
-				new State(this.castlingPermissions, this.enPassantPosition, this.halfMoveClock);
+		savedStates[stateIndex++] = new State(this.castlingPermissions, this.enPassantPosition,
+				this.halfMoveClock, this.key.getKey());
 
 		// Check for capture, and remove from the board
 		// Covers en passant captures
@@ -658,10 +676,15 @@ public class ChessBoard {
 
 		updateCastlingPerm(startPos);
 
+		if (this.enPassantPosition != Position.NULL_POSITION) {
+			key.toggleEnPassantSquare(this.enPassantPosition);
+		}
+
 		// check for pawn double and update passant
 		if (flags == Move.Flags.DOUBLE_PAWN_PUSH.value()) {
 			this.enPassantPosition =
 					endPos + (startColor == ChessColor.WHITE.value() ? Position.S : Position.N);
+			key.toggleEnPassantSquare(this.enPassantPosition);
 		} else {
 			this.enPassantPosition = Position.NULL_POSITION;
 		}
@@ -672,6 +695,8 @@ public class ChessBoard {
 		}
 
 		this.activeColor = ChessColor.opposite(activeColor);
+		key.toggleActiveColor();
+
 		if (endPiece != ChessPiece.NULL_PIECE
 				|| ChessPiece.getPieceType(startPiece) == PieceType.PAWN.value()) {
 			this.halfMoveClock = 0;
@@ -767,6 +792,7 @@ public class ChessBoard {
 		this.castlingPermissions = saved.castlingPermissions;
 		this.enPassantPosition = saved.enPassantPosition;
 		this.halfMoveClock = saved.halfMoveClock;
+		this.key.setKey(saved.zobristKey);
 	}
 
 	private void updateCastlingPerm(int position) {
@@ -774,17 +800,25 @@ public class ChessBoard {
 
 		if (position == Position.from(File.F_A, Rank.R_1)) {
 			updatedPermissions &= ~CastlingBitFlags.WHITE_QUEENSIDE.value();
+			key.toggleCastlingRights(CastlingBitFlags.WHITE_QUEENSIDE.value());
 		} else if (position == Position.from(File.F_A, Rank.R_8)) {
 			updatedPermissions &= ~CastlingBitFlags.BLACK_QUEENSIDE.value();
+			key.toggleCastlingRights(CastlingBitFlags.BLACK_QUEENSIDE.value());
 		} else if (position == Position.from(File.F_H, Rank.R_1)) {
 			updatedPermissions &= ~CastlingBitFlags.WHITE_KINGSIDE.value();
+			key.toggleCastlingRights(CastlingBitFlags.WHITE_KINGSIDE.value());
 		} else if (position == Position.from(File.F_H, Rank.R_8)) {
 			updatedPermissions &= ~CastlingBitFlags.BLACK_KINGSIDE.value();
+			key.toggleCastlingRights(CastlingBitFlags.BLACK_KINGSIDE.value());
 		} else if (position == Position.from(File.F_E, Rank.R_1)) {
 			updatedPermissions &= ~(CastlingBitFlags.WHITE_QUEENSIDE.value()
 					| CastlingBitFlags.WHITE_KINGSIDE.value());
+			key.toggleCastlingRights(CastlingBitFlags.WHITE_QUEENSIDE.value()
+					| CastlingBitFlags.WHITE_KINGSIDE.value());
 		} else if (position == Position.from(File.F_E, Rank.R_8)) {
 			updatedPermissions &= ~(CastlingBitFlags.BLACK_QUEENSIDE.value()
+					| CastlingBitFlags.BLACK_KINGSIDE.value());
+			key.toggleCastlingRights(CastlingBitFlags.BLACK_QUEENSIDE.value()
 					| CastlingBitFlags.BLACK_KINGSIDE.value());
 		} else {
 			return;
@@ -811,6 +845,9 @@ public class ChessBoard {
 
 			board.castlingPermissions =
 					CastlingBitFlags.value(EnumSet.allOf(CastlingBitFlags.class));
+			for (CastlingBitFlags flag : CastlingBitFlags.values()) {
+				board.key.toggleCastlingRights(flag.value());
+			}
 
 			for (File f : Position.File.values()) {
 				board.set(Position.from(f, Rank.R_2), ChessPiece.WHITE_PAWN.value());
@@ -871,22 +908,29 @@ public class ChessBoard {
 
 			}
 
-			int activeColor = majorComponents[1].equals("w") ? ChessColor.WHITE.value()
-					: ChessColor.BLACK.value();
+			int activeColor = ChessColor.WHITE.value();
+			if (!majorComponents[1].equals("w")) {
+				activeColor = ChessColor.BLACK.value();
+				position.key.toggleActiveColor();
+			}
 
 			int castlingPermissions = CastlingBitFlags.NO_CASTLING;
 			EnumSet<CastlingBitFlags> flags = EnumSet.noneOf(CastlingBitFlags.class);
 			if (majorComponents[2].matches("K")) {
 				flags.add(CastlingBitFlags.WHITE_KINGSIDE);
+				position.key.toggleCastlingRights(CastlingBitFlags.WHITE_KINGSIDE.value());
 			}
 			if (majorComponents[2].matches("Q")) {
 				flags.add(CastlingBitFlags.WHITE_QUEENSIDE);
+				position.key.toggleCastlingRights(CastlingBitFlags.WHITE_QUEENSIDE.value());
 			}
 			if (majorComponents[2].matches("k")) {
 				flags.add(CastlingBitFlags.BLACK_KINGSIDE);
+				position.key.toggleCastlingRights(CastlingBitFlags.BLACK_KINGSIDE.value());
 			}
 			if (majorComponents[2].matches("q")) {
 				flags.add(CastlingBitFlags.BLACK_QUEENSIDE);
+				position.key.toggleCastlingRights(CastlingBitFlags.BLACK_QUEENSIDE.value());
 			}
 			castlingPermissions = CastlingBitFlags.value(flags);
 
@@ -895,6 +939,7 @@ public class ChessBoard {
 				int file = majorComponents[3].charAt(0) - 97;
 				int rank = Character.getNumericValue(majorComponents[3].charAt(1)) - 1;
 				enPassantPosition = Position.from(file, rank);
+				position.key.toggleEnPassantSquare(enPassantPosition);
 			}
 
 			int halfMoveClock = Integer.valueOf(majorComponents[4]);
