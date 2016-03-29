@@ -35,6 +35,12 @@ public class Search {
 	private boolean continueSearch;
 	private long delay;
 
+	/**
+	 * Constructs a new Search with specified time limit
+	 * 
+	 * @param time
+	 *            the amount of time in milliseconds that the search has
+	 */
 	public Search(long time) {
 		delay = time;
 		continueSearch = true;

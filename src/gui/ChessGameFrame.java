@@ -94,7 +94,7 @@ public class ChessGameFrame extends JFrame implements Runnable {
 	}
 
 	/**
-	 * r The game thread will manage the state of the game, updating the players
+	 * The game thread will manage the state of the game, updating the players
 	 * with each new move, maintaining the overall state of the board, and
 	 * checking for the end of the game
 	 * 
