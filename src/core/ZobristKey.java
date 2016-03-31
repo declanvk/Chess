@@ -2,6 +2,16 @@ package core;
 
 import java.security.SecureRandom;
 
+/**
+ * A wrapper for a long Zobrist hash key, defining operations on the key.
+ * Zobrist hashing takes into account the color, piece type, and position of all
+ * the chess pieces on the board, the currently active color, the current
+ * castling rights for both sides, any enPassant Squares to create a unique key
+ * for each position in the game space.
+ * 
+ * @author declan
+ *
+ */
 public class ZobristKey {
 
 	private static final byte[] seed = { b(0x58), b(0x22), b(0xbc), b(0x5b), b(0x04), b(0x53),
@@ -61,10 +71,22 @@ public class ZobristKey {
 
 	private long key;
 
+	/**
+	 * Construct a new ZobristKey with a value of zero.
+	 */
 	public ZobristKey() {
 		this.key = 0L;
 	}
 
+	/**
+	 * Alter the key to reflect a change at the given position with the given
+	 * piece
+	 * 
+	 * @param position
+	 *            the position that was altered
+	 * @param piece
+	 *            the piece at the given position
+	 */
 	public void toggleBoard(int position, int piece) {
 		if (!Position.isValid(position)) {
 			throw new IllegalArgumentException("Position value is not valid");
@@ -75,6 +97,12 @@ public class ZobristKey {
 		key ^= boardValues[piece][position];
 	}
 
+	/**
+	 * Alter the key to reflect a change in the position's castling rights
+	 * 
+	 * @param castlingBitFlag
+	 *            the castling rights to update
+	 */
 	public void toggleCastlingRights(int castlingBitFlag) {
 		if (!(CastlingBitFlags.isValid(castlingBitFlag)
 				|| castlingBitFlag == (CastlingBitFlags.BLACK_KINGSIDE.value()
@@ -87,6 +115,12 @@ public class ZobristKey {
 		key ^= castlingRights[castlingBitFlag];
 	}
 
+	/**
+	 * Alter the key to reflect a change in the en passant position
+	 * 
+	 * @param position
+	 *            the en passant position
+	 */
 	public void toggleEnPassantSquare(int position) {
 		if (!Position.isValid(position)) {
 			throw new IllegalArgumentException("Position value is not valid");
@@ -95,18 +129,40 @@ public class ZobristKey {
 		key ^= enPassantSquare[position];
 	}
 
+	/**
+	 * Alter the key to reflect a change in the active color
+	 */
 	public void toggleActiveColor() {
 		key ^= activeColor;
 	}
 
+	/**
+	 * Returns the raw value of the ZobristKey
+	 * 
+	 * @return the raw value of the ZobristKey
+	 */
 	public long getKey() {
 		return key;
 	}
 
+
+	/**
+	 * Set the underlying key value of this ZobristKey
+	 * 
+	 * @param value
+	 *            the value to set the key to
+	 */
 	public void setKey(long value) {
 		this.key = value;
 	}
 
+	/**
+	 * Constructs a new ZobristKey from the given value
+	 * 
+	 * @param value
+	 *            the value to construct a ZobristKey from
+	 * @return a new ZobristKey constructed form the given value
+	 */
 	public static ZobristKey from(long value) {
 		ZobristKey key = new ZobristKey();
 		key.key = value;

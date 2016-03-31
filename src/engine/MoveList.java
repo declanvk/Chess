@@ -9,6 +9,13 @@ import core.ChessPiece;
 import core.Move;
 import engine.TranspositionTable.Transposition;
 
+/**
+ * A wrapper for the MoveGeneration that organizes moves into quiet and capture
+ * moves and exposes an iterator for all the moves
+ * 
+ * @author declan
+ *
+ */
 public class MoveList implements Iterable<Integer> {
 
 	private final ChessBoard position;
@@ -19,6 +26,17 @@ public class MoveList implements Iterable<Integer> {
 
 	private final ArrayList<Integer> moves;
 
+	/**
+	 * Constructs a MoveList with a given List of moves, a given position, and a
+	 * given transposition table
+	 * 
+	 * @param moves
+	 *            the moves to sort
+	 * @param position
+	 *            the position to evaluate against
+	 * @param table
+	 *            the transposition table to search for PV
+	 */
 	public MoveList(List<Integer> moves, ChessBoard position, TranspositionTable table) {
 		this.position = position;
 
@@ -59,7 +77,8 @@ public class MoveList implements Iterable<Integer> {
 
 	@Override
 	public Iterator<Integer> iterator() {
-		return moves.iterator();
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

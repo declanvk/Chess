@@ -332,6 +332,11 @@ public class ChessBoard {
 		return result;
 	}
 
+	/**
+	 * Returns true if the current position is a repetition
+	 * 
+	 * @return true if the current position is a repetition
+	 */
 	public boolean isRepetition() {
 		int j = Math.max(0, stateIndex - halfMoveClock);
 		for (int i = stateIndex - 2; i >= j; i -= 2) {
