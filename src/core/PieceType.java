@@ -112,7 +112,9 @@ public enum PieceType {
 	 * @return the PieceType associated with the given serialized value
 	 */
 	public static PieceType from(int type) {
-		assert isValid(type);
+		if (!isValid(type)) {
+			throw new IllegalArgumentException("Type value is not valid");
+		}
 
 		return PieceType.values()[type];
 	}
@@ -131,8 +133,7 @@ public enum PieceType {
 		} else if (repr == 'k' || repr == 'K') {
 			return PieceType.KING;
 		} else {
-			assert false;
-			return null;
+			throw new IllegalStateException("This should never happen");
 		}
 	}
 
@@ -144,7 +145,9 @@ public enum PieceType {
 	 * @return the score value of the given serialized value
 	 */
 	public static int getScore(int type) {
-		assert isValid(type);
+		if (!isValid(type)) {
+			throw new IllegalArgumentException("Type value is not valid");
+		}
 
 		return scores[type];
 	}

@@ -7,7 +7,6 @@ import java.util.List;
 import core.ChessBoard;
 import core.ChessPiece;
 import core.Move;
-import core.Move.Flags;
 import engine.TranspositionTable.Transposition;
 
 public class MoveList implements Iterable<Integer> {
@@ -23,9 +22,13 @@ public class MoveList implements Iterable<Integer> {
 	public MoveList(List<Integer> moves, ChessBoard position, TranspositionTable table) {
 		this.position = position;
 
-		this.pv = (table.get(position.getZobristKey()) != null
-				&& table.get(position.getZobristKey()).key == position.getZobristKey().getKey())
-						? table.get(position.getZobristKey()) : null;
+		if (table.get(position.getZobristKey()) != null) {
+			this.pv = table.get(position.getZobristKey());
+			if (this.pv.key != position.getZobristKey().getKey()
+					|| this.pv.bestMove == Move.NULL_MOVE) {
+				this.pv = null;
+			}
+		}
 
 		this.moves = new ArrayList<Integer>();
 		this.captures = new ArrayList<Integer>();
@@ -48,6 +51,10 @@ public class MoveList implements Iterable<Integer> {
 
 		this.moves.addAll(captures);
 		this.moves.addAll(quiet);
+	}
+
+	public int size() {
+		return moves.size();
 	}
 
 	@Override

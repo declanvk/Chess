@@ -71,7 +71,9 @@ public enum ChessColor {
 	 * @return the ChessColor corresponding to the input
 	 */
 	public static ChessColor from(int color) {
-		assert isValid(color);
+		if (!isValid(color)) {
+			throw new IllegalArgumentException("Not a valid color value");
+		}
 
 		return ChessColor.values()[color];
 	}
@@ -95,7 +97,9 @@ public enum ChessColor {
 	 * @return the opposite serialized ChessColor
 	 */
 	public static int opposite(int color) {
-		assert isValid(color);
+		if (!isValid(color)) {
+			throw new IllegalArgumentException("Not a valid color value");
+		}
 
 		return color ^ 1;
 	}

@@ -29,7 +29,6 @@ public class Search {
 
 	private static final ScheduledExecutorService timer =
 			Executors.newSingleThreadScheduledExecutor();
-	private static final int MAX_SEARCH_DEPTH = 4;
 	private static final int[] color = { 1, -1 };
 
 	private boolean continueSearch;
@@ -65,11 +64,12 @@ public class Search {
 
 		}, delay, TimeUnit.MILLISECONDS);
 
-		for (int searchDepth = 1; continueSearch && searchDepth < MAX_SEARCH_DEPTH; searchDepth++) {
+		for (int searchDepth = 1; continueSearch; searchDepth++) {
 			searchLog.logIterativeDeepeningLevel(searchDepth);
 			movesWithValues.clear();
 
-			for (Integer move : moves) {
+			MoveList moveList = new MoveList(moves, position, table);
+			for (Integer move : moveList) {
 				position.move(move);
 				searchLog.logNewSearchLevel(0, move);
 
@@ -81,21 +81,53 @@ public class Search {
 				searchLog.logSearchLevelReturn(0, move, value);
 				position.unmove(move);
 			}
+
+			searchLog.logIterativeDeepeningBestMove(searchDepth,
+					table.get(position.getZobristKey()) != null
+							? table.get(position.getZobristKey()).bestMove : Move.NULL_MOVE);
+
+			Collections.sort(movesWithValues, new Comparator<Pair<Integer, Integer>>() {
+
+				@Override
+				public int compare(Pair<Integer, Integer> o1, Pair<Integer, Integer> o2) {
+					return Integer.compare(o1.second(), o2.second());
+				}
+
+			});
+
+			table.set(position.getZobristKey(),
+					new Transposition(position.getZobristKey().getKey(),
+							movesWithValues.get(0).first(), movesWithValues.get(0).second(), 0,
+							TranspositionType.EXACT.value()));
+
+			System.err.println("   PV: " + getPVString(position, table));
 		}
-
-		Collections.sort(movesWithValues, new Comparator<Pair<Integer, Integer>>() {
-
-			@Override
-			public int compare(Pair<Integer, Integer> o1, Pair<Integer, Integer> o2) {
-				return Integer.compare(o1.second(), o2.second());
-			}
-
-		});
 
 		searchLog.close();
 		task.cancel(true);
 
 		return Move.from(movesWithValues.get(0).first());
+	}
+
+	private String getPVString(ChessBoard position, TranspositionTable table) {
+		if (table.get(position.getZobristKey()) != null) {
+			Transposition pv = table.get(position.getZobristKey());
+			if (pv.key == position.getZobristKey().getKey() && pv.bestMove != Move.NULL_MOVE
+					&& Move.isValid(pv.bestMove)) {
+				int bestMove = pv.bestMove;
+				String result = "";
+				position.move(bestMove);
+				result = getPVString(position, table);
+				position.unmove(bestMove);
+
+				return ChessNotation.algebraic(bestMove)
+						+ ((!result.equals("")) ? " > " + result : "");
+			} else {
+				return "";
+			}
+		} else {
+			return "";
+		}
 	}
 
 	private int negaMax(ChessBoard position, TranspositionTable table, int depth, int alpha,
@@ -126,7 +158,8 @@ public class Search {
 			log.logTerminal(ply, Integer.toString(eval), position.getZobristKey().getKey());
 
 			return eval;
-		} else if (position.hasInsufficientMaterial() || position.getHalfTurnClock() >= 100) {
+		} else if (position.isRepetition() || position.hasInsufficientMaterial()
+				|| position.getHalfTurnClock() >= 100) {
 			log.logTerminal(ply, "DRAW", position.getZobristKey().getKey());
 
 			return DRAW;
@@ -135,6 +168,14 @@ public class Search {
 		int bestValue = Integer.MIN_VALUE;
 		int bestMove = Move.NULL_MOVE;
 		MoveList moves = new MoveList(MoveGeneration.getMoves(position, false), position, table);
+		if (moves.size() == 0) {
+			if (position.isCheck()) {
+				return -CHECKMATE;
+			} else {
+				return DRAW;
+			}
+		}
+
 		for (Integer move : moves) {
 
 			position.move(move);
@@ -157,8 +198,10 @@ public class Search {
 		TranspositionType type;
 		if (bestValue <= alphaOriginal) {
 			type = TranspositionType.UPPER;
+			bestMove = Move.NULL_MOVE;
 		} else if (bestValue >= beta) {
 			type = TranspositionType.LOWER;
+			bestMove = Move.NULL_MOVE;
 		} else {
 			type = TranspositionType.EXACT;
 		}

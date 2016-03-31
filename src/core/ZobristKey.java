@@ -66,24 +66,31 @@ public class ZobristKey {
 	}
 
 	public void toggleBoard(int position, int piece) {
-		assert Position.isValid(position);
-		assert ChessPiece.isValid(piece);
+		if (!Position.isValid(position)) {
+			throw new IllegalArgumentException("Position value is not valid");
+		} else if (!ChessPiece.isValid(piece)) {
+			throw new IllegalArgumentException("Piece value is not valid");
+		}
 
 		key ^= boardValues[piece][position];
 	}
 
 	public void toggleCastlingRights(int castlingBitFlag) {
-		assert CastlingBitFlags.isValid(castlingBitFlag)
+		if (!(CastlingBitFlags.isValid(castlingBitFlag)
 				|| castlingBitFlag == (CastlingBitFlags.BLACK_KINGSIDE.value()
 						| CastlingBitFlags.BLACK_QUEENSIDE.value())
 				|| castlingBitFlag == (CastlingBitFlags.WHITE_KINGSIDE.value()
-						| CastlingBitFlags.WHITE_QUEENSIDE.value());
+						| CastlingBitFlags.WHITE_QUEENSIDE.value()))) {
+			throw new IllegalArgumentException("Castling bit flag value is not valid");
+		}
 
 		key ^= castlingRights[castlingBitFlag];
 	}
 
 	public void toggleEnPassantSquare(int position) {
-		assert Position.isValid(position);
+		if (!Position.isValid(position)) {
+			throw new IllegalArgumentException("Position value is not valid");
+		}
 
 		key ^= enPassantSquare[position];
 	}
@@ -95,7 +102,7 @@ public class ZobristKey {
 	public long getKey() {
 		return key;
 	}
-	
+
 	public void setKey(long value) {
 		this.key = value;
 	}

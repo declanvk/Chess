@@ -110,7 +110,9 @@ public class Bitboard implements Iterable<Integer> {
 	 * @return the position of the single set bit
 	 */
 	public int getSingle() {
-		assert size() == 1;
+		if (size() != 1) {
+			throw new IllegalStateException("The bitboard doesn't contain only a single bit");
+		}
 
 		return Position.getPosition(Long.numberOfTrailingZeros(this.board));
 	}

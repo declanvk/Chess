@@ -1,5 +1,10 @@
 package engine;
 
+import core.ChessPiece;
+import core.Move;
+import core.Position;
+import core.Move.Flags;
+
 public class ChessNotation {
 
 	/**
@@ -56,6 +61,48 @@ public class ChessNotation {
 			result += "\n";
 		}
 		return result;
+	}
+
+	private static String[] pieceTypeRepr = { "P", "N", "B", "R", "Q", "K" };
+
+	private static String pieceTypeRepr(int piece) {
+		if (piece == ChessPiece.NULL_PIECE) {
+			return "";
+		} else {
+			return pieceTypeRepr[ChessPiece.getPieceType(piece)];
+		}
+	}
+
+	public static String algebraic(int move) {
+		if (move == Move.NULL_MOVE) {
+			return "null";
+		} else if (!Move.isValid(move)) {
+			return "invd";
+		}
+
+		Move m = Move.from(move);
+		String entire = "";
+
+		entire += pieceTypeRepr(ChessPiece.getPieceType(m.getStartPiece()))
+				+ Position.toString(m.getStartPosition()) + "-";
+
+		if (m.getFlags() == Flags.QUIET.value()) {
+			entire += " |";
+		} else if (m.getFlags() == Flags.CAPTURE.value()) {
+			entire += "X" + pieceTypeRepr(ChessPiece.getPieceType(m.getEndPiece()));
+		} else if (m.getFlags() == Flags.CASTLE.value()) {
+			entire += "OO";
+		} else if (m.getFlags() == Flags.EN_PASSANT.value()) {
+			entire += "EN";
+		} else if (m.getFlags() == Flags.PROMOTION.value()) {
+			entire += " ^" + pieceTypeRepr(m.getPromotionPieceType());
+		} else if (m.getFlags() == Flags.DOUBLE_PAWN_PUSH.value()) {
+			entire += "||";
+		}
+
+		entire += "-" + Position.toString(m.getEndPosition());
+
+		return entire;
 	}
 
 	private static final long k1 = 0x5555555555555555L;

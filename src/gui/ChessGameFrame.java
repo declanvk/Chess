@@ -11,6 +11,7 @@ import javax.swing.SwingUtilities;
 import core.ChessBoard;
 import core.ChessColor;
 import core.Move;
+import engine.ChessNotation;
 import engine.MoveGeneration;
 
 /**
@@ -63,7 +64,7 @@ public class ChessGameFrame extends JFrame implements Runnable {
 				new String[] { "PLAYER - AI", "PLAYER - PLAYER", "AI - RANDOM", "AI - AI" };
 		int chosenIndex = JOptionPane.showOptionDialog(null, "Choose play configuration",
 				"Choose Play Type", JOptionPane.OK_OPTION, JOptionPane.QUESTION_MESSAGE, null,
-				options, "PLAYER - AI");
+				options, options[2]);
 		String chosen = options[chosenIndex != -1 ? chosenIndex : 0];
 
 		if ("PLAYER - AI".equals(chosen)) {
@@ -78,7 +79,7 @@ public class ChessGameFrame extends JFrame implements Runnable {
 					boardPanel);
 		} else if ("AI - RANDOM".equals(chosen)) {
 			this.white =
-					new ArtificialPlayer("White AI player", ChessColor.WHITE.value(), board, 30L);
+					new ArtificialPlayer("White AI player", ChessColor.WHITE.value(), board, 100L);
 			this.black = new RandomPlayer("Black Random player", ChessColor.BLACK.value(), board);
 		} else if ("AI - AI".equals(chosen)) {
 			this.white = new ArtificialPlayer("White AI player", ChessColor.WHITE.value(), board,
@@ -86,7 +87,7 @@ public class ChessGameFrame extends JFrame implements Runnable {
 			this.black =
 					new ArtificialPlayer("Black AI player", ChessColor.BLACK.value(), board, 300L);
 		} else {
-			assert false;
+			throw new IllegalStateException("This should never happen");
 		}
 
 		GameThread gameThread = new GameThread(this.white, this.black, board, this);
@@ -94,7 +95,7 @@ public class ChessGameFrame extends JFrame implements Runnable {
 	}
 
 	/**
-	 * r The game thread will manage the state of the game, updating the players
+	 * The game thread will manage the state of the game, updating the players
 	 * with each new move, maintaining the overall state of the board, and
 	 * checking for the end of the game
 	 * 
@@ -149,7 +150,8 @@ public class ChessGameFrame extends JFrame implements Runnable {
 				public void propertyChange(PropertyChangeEvent evt) {
 					Move move = (Move) evt.getNewValue();
 					System.err.println((playerToggle ? ChessColor.from(black.color)
-							: ChessColor.from(white.color)) + ": " + move);
+							: ChessColor.from(white.color)) + ": "
+							+ ChessNotation.algebraic(move.value()) + "\n");
 					board.move(move);
 					panel.repaint();
 
@@ -167,7 +169,10 @@ public class ChessGameFrame extends JFrame implements Runnable {
 						return;
 					} else if (board.isRepetition() || board.hasInsufficientMaterial()
 							|| board.getHalfTurnClock() >= 100) {
-						JOptionPane.showMessageDialog(null, "The game is a draw.");
+						JOptionPane.showMessageDialog(null,
+								"The game is a draw. " + board.isRepetition() + " "
+										+ board.hasInsufficientMaterial() + " "
+										+ (board.getHalfTurnClock() >= 100));
 						return;
 					}
 

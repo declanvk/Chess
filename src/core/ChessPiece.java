@@ -156,7 +156,10 @@ public enum ChessPiece {
 	 * @return the ChessPiece associated with the given value
 	 */
 	public static ChessPiece from(int piece) {
-		assert isValid(piece) || piece == NULL_PIECE;
+		if (!isValid(piece) && piece != NULL_PIECE) {
+			throw new IllegalArgumentException(
+					"Piece is not valid or equal to the null piece value");
+		}
 
 		return (piece != NULL_PIECE) ? ChessPiece.values()[piece] : null;
 	}
@@ -214,7 +217,9 @@ public enum ChessPiece {
 	 *         serialized ChessPiece
 	 */
 	public static int getColor(int piece) {
-		assert isValid(piece);
+		if (!isValid(piece) && piece != NULL_PIECE) {
+			throw new IllegalArgumentException("Piece is not valid");
+		}
 
 		return piece < 6 ? 0 : 1;
 	}
@@ -229,7 +234,9 @@ public enum ChessPiece {
 	 *         serialized ChessPiece
 	 */
 	public static int getPieceType(int piece) {
-		assert isValid(piece);
+		if (!isValid(piece) && piece != NULL_PIECE) {
+			throw new IllegalArgumentException("Piece is not valid");
+		}
 
 		return piece % 6;
 	}

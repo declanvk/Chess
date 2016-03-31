@@ -47,9 +47,12 @@ public class Perft {
 	}
 
 	public static void main(String[] args) {
+		long[] expectedValue = { 1, 20, 400, 8902, 197281, 4865351, 119048441 };
 		ChessBoard position = ChessBoard.ChessBoardFactory.startingBoard();
 		for (int depth = 0; depth <= 6; depth++) {
-			System.out.printf("%10d\n", perft(position, depth));
+			long value = perft(position, depth);
+
+			System.out.printf("%10d:%10d\n", expectedValue[depth], value);
 		}
 	}
 

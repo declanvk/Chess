@@ -123,7 +123,9 @@ public class Position {
 		 * @return a File from the given serialized value
 		 */
 		public static File from(int file) {
-			assert isValid(file);
+			if (!isValid(file)) {
+				throw new IllegalArgumentException("File value is not valid");
+			}
 
 			return File.values()[file];
 		}
@@ -219,7 +221,9 @@ public class Position {
 		 * @return a Rank from the given serialized form
 		 */
 		public static Rank from(int rank) {
-			assert isValid(rank);
+			if (!isValid(rank)) {
+				throw new IllegalArgumentException("Rank value is not valid");
+			}
 
 			return Rank.values()[rank];
 		}
@@ -355,8 +359,11 @@ public class Position {
 	 * @return the position value given the file and rank
 	 */
 	public static int getPosition(int file, int rank) {
-		assert File.isValid(file);
-		assert Rank.isValid(rank);
+		if (!File.isValid(file)) {
+			throw new IllegalArgumentException("File value is not valid");
+		} else if (!Rank.isValid(rank)) {
+			throw new IllegalArgumentException("Rank value is not valid");
+		}
 
 		return positions[(rank * 8) + file];
 	}
@@ -371,7 +378,9 @@ public class Position {
 	 *         containing valid positions
 	 */
 	public static int getPosition(int index) {
-		assert -1 < index && index < positions.length;
+		if (!(-1 < index && index < positions.length)) {
+			throw new IllegalArgumentException("Index value is not valid");
+		}
 
 		return positions[index];
 	}
@@ -424,8 +433,11 @@ public class Position {
 	 * @return the 0x88 position value for the given file and rank
 	 */
 	public static int from(int file, int rank) {
-		assert 0 <= file && file <= 7;
-		assert 0 <= rank && rank <= 7;
+		if (!File.isValid(file)) {
+			throw new IllegalArgumentException("File value is not valid");
+		} else if (!Rank.isValid(rank)) {
+			throw new IllegalArgumentException("Rank value is not valid");
+		}
 
 		return 16 * rank + file;
 	}

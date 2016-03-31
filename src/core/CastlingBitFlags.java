@@ -146,7 +146,9 @@ public enum CastlingBitFlags {
 	 * @return a deserialized bitset
 	 */
 	public static EnumSet<CastlingBitFlags> from(int castleFlags) {
-		assert isValid(castleFlags) || castleFlags == 0;
+		if (!isValid(castleFlags) && castleFlags != 0) {
+			throw new IllegalArgumentException("Flags argument is not a valid value");
+		}
 
 		EnumSet<CastlingBitFlags> set = EnumSet.noneOf(CastlingBitFlags.class);
 		while (castleFlags != 0) {
@@ -165,7 +167,9 @@ public enum CastlingBitFlags {
 	 * @return a deserialized single value
 	 */
 	public static CastlingBitFlags fromSingle(int castleFlag) {
-		assert isValidSingle(castleFlag);
+		if (!isValidSingle(castleFlag)) {
+			throw new IllegalArgumentException("Parameter is not a valid single value");
+		}
 
 		return CastlingBitFlags.values()[Integer.lowestOneBit(castleFlag) - 1];
 	}

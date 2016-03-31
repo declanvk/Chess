@@ -50,6 +50,10 @@ public class SearchLogger {
 		output.printf("Searching to depth of %d\n", level);
 	}
 
+	public void logIterativeDeepeningBestMove(int level, int move) {
+		output.printf("Searching to depth of %d produced \n", level, ChessNotation.algebraic(move));
+	}
+
 	public void logTerminal(int ply, String value, long positionKey) {
 		indent(ply);
 		output.printf("Evaluating %d to %s at ply %d\n", positionKey, value, ply);
@@ -62,12 +66,12 @@ public class SearchLogger {
 
 	public void logNewSearchLevel(int ply, int move) {
 		indent(ply);
-		output.printf("Searching %s\n", algebraic(move));
+		output.printf("%d:%s\n", ply, ChessNotation.algebraic(move));
 	}
 
 	public void logSearchLevelReturn(int ply, int move, int value) {
 		indent(ply);
-		output.printf("Searching %s -> %d\n", algebraic(move), value);
+		output.printf("%d:%s -> %d\n", ply, ChessNotation.algebraic(move), value);
 	}
 
 	public void logTimeLimitReached() {
@@ -82,42 +86,6 @@ public class SearchLogger {
 
 	public void close() {
 		output.close();
-	}
-
-	private String algebraic(int move) {
-		Move m = Move.from(move);
-		String entire = "";
-
-		entire += pieceTypeRepr(ChessPiece.getPieceType(m.getStartPiece()))
-				+ Position.toString(m.getStartPosition()) + "-";
-
-		if (m.getFlags() == Flags.QUIET.value()) {
-			entire += "|";
-		} else if (m.getFlags() == Flags.CAPTURE.value()) {
-			entire += "X" + pieceTypeRepr(ChessPiece.getPieceType(m.getEndPiece()));
-		} else if (m.getFlags() == Flags.CASTLE.value()) {
-			entire += "OO";
-		} else if (m.getFlags() == Flags.EN_PASSANT.value()) {
-			entire += "EN";
-		} else if (m.getFlags() == Flags.PROMOTION.value()) {
-			entire += "^" + pieceTypeRepr(m.getPromotionPieceType());
-		} else if (m.getFlags() == Flags.DOUBLE_PAWN_PUSH.value()) {
-			entire += "||";
-		}
-
-		entire += "-" + Position.toString(m.getEndPosition());
-
-		return entire;
-	}
-
-	private String[] pieceTypeRepr = { "P", "N", "B", "R", "Q", "K" };
-
-	private String pieceTypeRepr(int piece) {
-		if (piece == ChessPiece.NULL_PIECE) {
-			return "";
-		} else {
-			return pieceTypeRepr[ChessPiece.getPieceType(piece)];
-		}
 	}
 
 }

@@ -15,9 +15,14 @@ public class TranspositionTable {
 	 * @return a mask from the starting bit to the ending bit
 	 */
 	private static int createMask(int startBit, int length) {
-		assert 1 <= startBit && startBit <= 32;
-		assert 1 <= length && length <= 32;
-		assert (Integer.SIZE - (startBit + length) >= 0);
+		if (!(1 <= startBit && startBit <= 32)) {
+			throw new IllegalArgumentException("Starting bit value is not valid");
+		} else if (!(1 <= length && length <= 32)) {
+			throw new IllegalArgumentException("Length value is not valid");
+		} else if (!(Integer.SIZE - (startBit + length) >= 0)) {
+			throw new IllegalArgumentException(
+					"Combination of starting bit and length values is not valid");
+		}
 
 		return ((-1) >>> (Integer.SIZE - length)) << (startBit - 1);
 	}
@@ -56,7 +61,9 @@ public class TranspositionTable {
 		}
 
 		public static TranspositionType from(int value) {
-			assert isValid(value);
+			if (!isValid(value)) {
+				throw new IllegalArgumentException("Given value is not valid");
+			}
 
 			return TranspositionType.values()[value];
 		}

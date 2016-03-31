@@ -73,7 +73,9 @@ public class Move {
 		 * @return the Flag associated with the value
 		 */
 		public static Flags from(int flag) {
-			assert isValid(flag);
+			if (!isValid(flag)) {
+				throw new IllegalArgumentException("Flag value is not valid");
+			}
 
 			return Flags.values()[flag];
 		}
@@ -106,12 +108,22 @@ public class Move {
 	 *            the promotion piece type of the move, if relevant
 	 */
 	public Move(int startPiece, int endPiece, int startPos, int endPos, int flag, int promotion) {
-		assert Position.isValid(startPos);
-		assert Position.isValid(endPos);
-		assert Flags.isValid(flag);
-		assert ChessPiece.isValid(startPiece);
-		assert ChessPiece.isValid(endPiece) || endPiece == ChessPiece.NULL_PIECE;
-		assert PieceType.isValidPromotion(promotion) || promotion == PieceType.NULL_PROMOTION;
+		if (!Position.isValid(startPos)) {
+			throw new IllegalArgumentException("Start position value is not valid");
+		} else if (!Position.isValid(endPos)) {
+			throw new IllegalArgumentException("End position value is not valid");
+		} else if (!Flags.isValid(flag)) {
+			throw new IllegalArgumentException("Flag value is not valid");
+		} else if (!ChessPiece.isValid(startPiece)) {
+			throw new IllegalArgumentException("Start piece value is not valid");
+		} else if (!(ChessPiece.isValid(endPiece) || endPiece == ChessPiece.NULL_PIECE)) {
+			throw new IllegalArgumentException(
+					"End piece value is not valid or not equal to the null piece value");
+		} else if (!(PieceType.isValidPromotion(promotion)
+				|| promotion == PieceType.NULL_PROMOTION)) {
+			throw new IllegalArgumentException(
+					"Piece type value is not a valid promotion or not equal to the null promotion value");
+		}
 
 		this.startPiece = startPiece;
 		this.endPiece = endPiece;
@@ -197,21 +209,20 @@ public class Move {
 
 	private static final int START_POSITION_SHIFT = FLAG_SHIFT + Flags.BIT_WIDTH;
 	private static final int START_POSITION_MASK =
-			calculateMask(START_POSITION_SHIFT, Position.BIT_WIDTH - 1);
+			calculateMask(START_POSITION_SHIFT, Position.BIT_WIDTH);
 
-	private static final int END_POSITION_SHIFT = START_POSITION_SHIFT + (Position.BIT_WIDTH - 1);
+	private static final int END_POSITION_SHIFT = START_POSITION_SHIFT + (Position.BIT_WIDTH);
 	private static final int END_POSITION_MASK =
-			calculateMask(END_POSITION_SHIFT, Position.BIT_WIDTH - 1);
+			calculateMask(END_POSITION_SHIFT, Position.BIT_WIDTH);
 
 	private static final int START_PIECE_SHIFT = END_POSITION_SHIFT + (Position.BIT_WIDTH);
 	private static final int START_PIECE_MASK =
-			calculateMask(START_PIECE_SHIFT, ChessPiece.BIT_WIDTH + 1);
+			calculateMask(START_PIECE_SHIFT, ChessPiece.BIT_WIDTH);
 
-	private static final int END_PIECE_SHIFT = START_PIECE_SHIFT + (ChessPiece.BIT_WIDTH + 1);
-	private static final int END_PIECE_MASK =
-			calculateMask(END_PIECE_SHIFT, ChessPiece.BIT_WIDTH + 1);
+	private static final int END_PIECE_SHIFT = START_PIECE_SHIFT + (ChessPiece.BIT_WIDTH);
+	private static final int END_PIECE_MASK = calculateMask(END_PIECE_SHIFT, ChessPiece.BIT_WIDTH);
 
-	private static final int PROMOTION_PIECE_SHIFT = END_PIECE_SHIFT + (ChessPiece.BIT_WIDTH + 1);
+	private static final int PROMOTION_PIECE_SHIFT = END_PIECE_SHIFT + (ChessPiece.BIT_WIDTH);
 	private static final int PROMOTION_PIECE_MASK =
 			calculateMask(PROMOTION_PIECE_SHIFT, ChessPiece.BIT_WIDTH);
 

@@ -146,7 +146,9 @@ public class ChessBoard {
 	 * @return the ChessPiece located in the given position
 	 */
 	public ChessPiece getObject(int position) {
-		assert Position.isValid(position);
+		if (!Position.isValid(position)) {
+			throw new IllegalArgumentException("Position value is not valid");
+		}
 
 		int piece = board[position];
 
@@ -163,7 +165,9 @@ public class ChessBoard {
 	 *         position
 	 */
 	public int get(int position) {
-		assert Position.isValid(position);
+		if (!Position.isValid(position)) {
+			throw new IllegalArgumentException("Position value is not valid");
+		}
 
 		return board[position];
 	}
@@ -180,8 +184,11 @@ public class ChessBoard {
 	 *         with given type and color
 	 */
 	public Bitboard getPieces(int color, int type) {
-		assert ChessColor.isValid(color);
-		assert PieceType.isValid(type);
+		if (!ChessColor.isValid(color)) {
+			throw new IllegalArgumentException("Color value is not valid");
+		} else if (!PieceType.isValid(type)) {
+			throw new IllegalArgumentException("Piece type value is not valid");
+		}
 
 		return pieces[color][type].clone();
 	}
@@ -196,15 +203,21 @@ public class ChessBoard {
 	 *         with given color
 	 */
 	public Bitboard getOccupany(int color) {
-		assert ChessColor.isValid(color) || color == BOTH_COLOR;
+		if (!ChessColor.isValid(color) && color != BOTH_COLOR) {
+			throw new IllegalArgumentException("Color value is not valid");
+		}
 
 		return occupancy[color].clone();
 	}
 
 	private void set(int position, int piece) {
-		assert Position.isValid(position);
-		assert ChessPiece.isValid(piece);
-		assert isEmpty(position);
+		if (!Position.isValid(position)) {
+			throw new IllegalArgumentException("Position value is not valid");
+		} else if (!ChessPiece.isValid(piece)) {
+			throw new IllegalArgumentException("Piece value is not valid");
+		} else if (!isEmpty(position)) {
+			throw new IllegalStateException("Given position is not empty");
+		}
 
 		pieces[ChessPiece.getColor(piece)][ChessPiece.getPieceType(piece)].set(position);
 		occupancy[ChessPiece.getColor(piece)].set(position);
@@ -216,8 +229,11 @@ public class ChessBoard {
 	}
 
 	private int clear(int position) {
-		assert Position.isValid(position);
-		assert !isEmpty(position);
+		if (!Position.isValid(position)) {
+			throw new IllegalArgumentException("Position value is not valid");
+		} else if (isEmpty(position)) {
+			throw new IllegalStateException("Given position is empty");
+		}
 
 		int oldPiece = board[position];
 
@@ -240,7 +256,9 @@ public class ChessBoard {
 	 * @return true if the position doesn't contain a ChessPiece
 	 */
 	public boolean isEmpty(int position) {
-		assert Position.isValid(position);
+		if (!Position.isValid(position)) {
+			throw new IllegalArgumentException("Position value is not valid");
+		}
 
 		return board[position] == ChessPiece.NULL_PIECE;
 	}
@@ -601,9 +619,8 @@ public class ChessBoard {
 	 */
 	public void move(int move) {
 		if (!Move.isValid(move)) {
-			System.err.println(Move.from(move));
+			throw new IllegalArgumentException("Move value is not valid");
 		}
-		assert Move.isValid(move);
 
 		int startPos = Move.getStartPosition(move);
 		int endPos = Move.getEndPosition(move);
@@ -682,7 +699,7 @@ public class ChessBoard {
 				castlingRookStart = Position.from(File.F_A, Rank.R_8);
 				castlingRookEnd = Position.from(File.F_D, Rank.R_8);
 			} else {
-				assert false;
+				throw new IllegalStateException("This should never happen");
 			}
 
 			set(castlingRookEnd, clear(castlingRookStart));
@@ -726,7 +743,9 @@ public class ChessBoard {
 	 *            the move to unmake
 	 */
 	public void unmove(int move) {
-		assert Move.isValid(move);
+		if (!Move.isValid(move)) {
+			throw new IllegalArgumentException("Move value is not valid");
+		}
 
 		int startPos = Move.getStartPosition(move);
 		int endPos = Move.getEndPosition(move);
@@ -784,7 +803,7 @@ public class ChessBoard {
 				castlingRookStart = Position.from(File.F_A, Rank.R_8);
 				castlingRookEnd = Position.from(File.F_D, Rank.R_8);
 			} else {
-				assert false;
+				throw new IllegalStateException("This should never happen");
 			}
 
 			set(castlingRookStart, clear(castlingRookEnd));
