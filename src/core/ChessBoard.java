@@ -59,10 +59,10 @@ public class ChessBoard {
 		this.board = new int[Position.NUM_TOTAL_VALUES];
 		Arrays.fill(this.board, ChessPiece.NULL_PIECE);
 
-		this.pieces = new Bitboard[ChessColor.values().length][PieceType.values().length];
-		for (ChessColor color : ChessColor.values()) {
+		this.pieces = new Bitboard[ChessColor.values().length + 1][PieceType.values().length];
+		for (int i = 0; i < this.pieces.length; i++) {
 			for (PieceType type : PieceType.values()) {
-				pieces[color.value()][type.value()] = new Bitboard();
+				pieces[i][type.value()] = new Bitboard();
 			}
 		}
 
@@ -220,6 +220,8 @@ public class ChessBoard {
 		}
 
 		pieces[ChessPiece.getColor(piece)][ChessPiece.getPieceType(piece)].set(position);
+		pieces[BOTH_COLOR][ChessPiece.getPieceType(piece)].set(position);
+
 		occupancy[ChessPiece.getColor(piece)].set(position);
 		occupancy[BOTH_COLOR].set(position);
 
@@ -238,6 +240,8 @@ public class ChessBoard {
 		int oldPiece = board[position];
 
 		pieces[ChessPiece.getColor(oldPiece)][ChessPiece.getPieceType(oldPiece)].clear(position);
+		pieces[BOTH_COLOR][ChessPiece.getPieceType(oldPiece)].clear(position);
+
 		occupancy[ChessPiece.getColor(oldPiece)].clear(position);
 		occupancy[BOTH_COLOR].clear(position);
 
@@ -358,12 +362,55 @@ public class ChessBoard {
 	 * @return the likely material change
 	 */
 	public int staticExchangeEvaluation(int move) {
-		return 1; // TODO (wait until chess engine started) implement static
-					// exchange evaluation
+		if (Move.getEndPiece(move) == ChessPiece.NULL_PIECE) {
+			throw new IllegalArgumentException("Move value is not a capture");
+		}
+
+		int endPiece = Move.getEndPiece(move);
+		int value = 0;
+		this.move(move);
+		value = ChessPiece.from(endPiece).score()
+				- staticExchanceEvaluation(Move.getEndPosition(move), this.activeColor);
+		this.unmove(move);
+
+		return value;
+	}
+
+	private int staticExchanceEvaluation(int endPosition, int color) {
+		int value = 0;
+		int leastValAttPiecePos = Position.NULL_POSITION;
+		int leastValAttPieceScore = Integer.MAX_VALUE;
+
+		Bitboard attackers = attackers(endPosition, color);
+		if (attackers.size() == 0) {
+			return value;
+		}
+
+		for (Integer attackerPosition : attackers) {
+			int piece = get(attackerPosition);
+			if (leastValAttPieceScore > ChessPiece.getScore(piece)) {
+				leastValAttPieceScore = ChessPiece.getScore(piece);
+				leastValAttPiecePos = attackerPosition;
+			}
+		}
+
+		if (leastValAttPiecePos != Position.NULL_POSITION) {
+			int leastValPiece = this.get(leastValAttPiecePos);
+			int attacked = this.get(endPosition);
+			int leastValCapture = Move.value(leastValPiece, attacked, leastValAttPiecePos,
+					endPosition, Move.Flags.CAPTURE.value(), PieceType.NULL_PROMOTION);
+
+			this.move(leastValCapture);
+			value = Math.max(0, leastValAttPieceScore
+					- staticExchanceEvaluation(endPosition, this.activeColor));
+			this.unmove(leastValCapture);
+		}
+
+		return value;
 	}
 
 	private static final double MATERIAL_WEIGHT = 1.0;
-	private static final double MOBILITY_WEIGHT = 1.0;
+	private static final double MOBILITY_WEIGHT = 5.0;
 
 	/**
 	 * Evaluates the current position based on the material score and mobility
@@ -614,6 +661,82 @@ public class ChessBoard {
 		}
 
 		return false;
+	}
+
+	public Bitboard attackers(int position, int attackerColor) {
+		int attackingPawn = ChessPiece.fromRaw(attackerColor, PieceType.PAWN.value());
+		int attackingKnight = ChessPiece.fromRaw(attackerColor, PieceType.KNIGHT.value());
+		int attackingKing = ChessPiece.fromRaw(attackerColor, PieceType.KING.value());
+		int attackingBishop = ChessPiece.fromRaw(attackerColor, PieceType.BISHOP.value());
+		int attackingRook = ChessPiece.fromRaw(attackerColor, PieceType.ROOK.value());
+		int attackingQueen = ChessPiece.fromRaw(attackerColor, PieceType.QUEEN.value());
+
+		Bitboard attackers = new Bitboard();
+
+		for (int i = 1; i < MoveGeneration.pawnOffsets[attackerColor].length; i++) {
+			int pawnPos = position - MoveGeneration.pawnOffsets[attackerColor][i];
+			if (Position.isValid(pawnPos) && this.get(pawnPos) == attackingPawn) {
+				attackers.set(pawnPos);
+			}
+		}
+
+		for (int i = 0; i < MoveGeneration.knightOffsets.length; i++) {
+			int knightPos = position + MoveGeneration.knightOffsets[i];
+			if (Position.isValid(knightPos) && this.get(knightPos) == attackingKnight) {
+				attackers.set(knightPos);
+			}
+		}
+
+		for (int i = 0; i < MoveGeneration.rookDirections.length; i++) {
+			int rookPos = position + MoveGeneration.rookDirections[i];
+			while (Position.isValid(rookPos)) {
+				if (this.get(rookPos) != ChessPiece.NULL_PIECE) {
+					if (this.get(rookPos) == attackingRook) {
+						attackers.set(rookPos);
+					} else {
+						break;
+					}
+				}
+				rookPos += MoveGeneration.rookDirections[i];
+			}
+		}
+
+		for (int i = 0; i < MoveGeneration.bishopDirections.length; i++) {
+			int bishopPos = position + MoveGeneration.bishopDirections[i];
+			while (Position.isValid(bishopPos)) {
+				if (this.get(bishopPos) != ChessPiece.NULL_PIECE) {
+					if (this.get(bishopPos) == attackingBishop) {
+						attackers.set(bishopPos);
+					} else {
+						break;
+					}
+				}
+				bishopPos += MoveGeneration.bishopDirections[i];
+			}
+		}
+
+		for (int i = 0; i < MoveGeneration.queenDirections.length; i++) {
+			int queenPos = position + MoveGeneration.queenDirections[i];
+			while (Position.isValid(queenPos)) {
+				if (this.get(queenPos) != ChessPiece.NULL_PIECE) {
+					if (this.get(queenPos) == attackingQueen) {
+						attackers.set(queenPos);
+					} else {
+						break;
+					}
+				}
+				queenPos += MoveGeneration.queenDirections[i];
+			}
+		}
+
+		for (int i = 0; i < MoveGeneration.kingOffsets.length; i++) {
+			int kingPos = position + MoveGeneration.kingOffsets[i];
+			if (Position.isValid(kingPos) && this.get(kingPos) == attackingKing) {
+				attackers.set(kingPos);
+			}
+		}
+
+		return attackers;
 	}
 
 	/**

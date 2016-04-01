@@ -2,8 +2,6 @@ package engine;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -15,7 +13,6 @@ import core.ChessPiece;
 import core.Move;
 import core.PieceType;
 import core.Position;
-import util.Pair;
 
 /**
  * A collection of methods that produce legal Moves given a ChessBoars
@@ -80,16 +77,6 @@ public class MoveGeneration {
 				.side()] = Bitboard.from(0x6000000000000000L);
 	}
 
-	private static Comparator<Pair<Integer, Integer>> moveSorter =
-			new Comparator<Pair<Integer, Integer>>() {
-
-				@Override
-				public int compare(Pair<Integer, Integer> o1, Pair<Integer, Integer> o2) {
-					return Integer.compare(o2.second(), o1.second());
-				}
-
-			};
-
 	/**
 	 * Returns all legal moves for the given position, taking into account
 	 * whether or not the search is quiescent
@@ -103,18 +90,8 @@ public class MoveGeneration {
 	 *         whether or not the search is quiescent
 	 */
 	public static ArrayList<Integer> getMoves(ChessBoard position, boolean quiescent) {
-		ArrayList<Integer> moves = new ArrayList<Integer>();
-		for (Pair<Integer, Integer> moveValue : getMoveValues(position, quiescent)) {
-			moves.add(moveValue.first());
-		}
-
-		return moves;
-	}
-
-	private static ArrayList<Pair<Integer, Integer>> getMoveValues(ChessBoard position,
-			boolean quiescent) {
 		boolean isCheck = position.isCheck();
-		ArrayList<Pair<Integer, Integer>> moves = getMoves(position);
+		ArrayList<Integer> moves = getMoves(position);
 
 		if (!quiescent) {
 			if (!isCheck) {
@@ -122,22 +99,21 @@ public class MoveGeneration {
 			}
 		} else {
 			// If quiescent remove all moves that don't capture
-			Iterator<Pair<Integer, Integer>> iter = moves.iterator();
-			Pair<Integer, Integer> move = null;
+			Iterator<Integer> iter = moves.iterator();
+			Integer move = null;
 			while (iter.hasNext()) {
 				move = iter.next();
-				if (Move.getEndPiece(move.first()) != ChessPiece.NULL_PIECE) {
+				if (Move.getEndPiece(move) != ChessPiece.NULL_PIECE) {
 					iter.remove();
 				}
 			}
 		}
 
-		Collections.sort(moves, moveSorter);
 		return moves;
 	}
 
-	private static ArrayList<Pair<Integer, Integer>> getMoves(ChessBoard position) {
-		ArrayList<Pair<Integer, Integer>> moves = new ArrayList<Pair<Integer, Integer>>();
+	private static ArrayList<Integer> getMoves(ChessBoard position) {
+		ArrayList<Integer> moves = new ArrayList<Integer>();
 
 		// Get queen moves
 		for (Integer pos : position.getPieces(position.getActiveColor(), PieceType.QUEEN.value())) {
@@ -175,8 +151,8 @@ public class MoveGeneration {
 		return moves;
 	}
 
-	private static void getMovesSliding(Collection<Pair<Integer, Integer>> moves, int startPos,
-			int[] directions, ChessBoard position) {
+	private static void getMovesSliding(Collection<Integer> moves, int startPos, int[] directions,
+			ChessBoard position) {
 		int startPiece = position.get(startPos);
 		for (int direction : directions) {
 			int endPos = startPos + direction;
@@ -202,8 +178,8 @@ public class MoveGeneration {
 		}
 	}
 
-	private static void getMovesNonSliding(Collection<Pair<Integer, Integer>> moves, int startPos,
-			int[] offsets, ChessBoard position) {
+	private static void getMovesNonSliding(Collection<Integer> moves, int startPos, int[] offsets,
+			ChessBoard position) {
 		int startPiece = position.get(startPos);
 		for (int offset : offsets) {
 			int endPos = startPos + offset;
@@ -224,7 +200,7 @@ public class MoveGeneration {
 		}
 	}
 
-	private static void getPawnMoves(Collection<Pair<Integer, Integer>> moves, int startPos,
+	private static void getPawnMoves(Collection<Integer> moves, int startPos,
 			final ChessBoard position) {
 
 		// The bitboard shifting techniques used below would be better used with
@@ -307,7 +283,7 @@ public class MoveGeneration {
 		}
 	}
 
-	private static void addPawnMoves(Collection<Pair<Integer, Integer>> moves, int startPos,
+	private static void addPawnMoves(Collection<Integer> moves, int startPos,
 			final ChessBoard position, Bitboard toPromote, int flags, int endPos) {
 		if (!toPromote.check(endPos)) {
 			int endPosShift = 0;
@@ -337,8 +313,7 @@ public class MoveGeneration {
 		}
 	}
 
-	private static void getCastlingMoves(Collection<Pair<Integer, Integer>> moves,
-			ChessBoard position) {
+	private static void getCastlingMoves(Collection<Integer> moves, ChessBoard position) {
 		for (CastlingBitFlags flag : CastlingBitFlags.from(position.getCastling())) {
 			if (flag.color() == position.getActiveColor()
 					&& position.isEmptyMask(castlingEmptyMask[flag.color()][flag.side()])
@@ -365,10 +340,10 @@ public class MoveGeneration {
 	 */
 	public static HashMap<Integer, ArrayList<Move>> getSortedMoves(ChessBoard position) {
 		HashMap<Integer, ArrayList<Move>> moveMap = new HashMap<Integer, ArrayList<Move>>();
-		ArrayList<Pair<Integer, Integer>> moves = getMoveValues(position, false);
+		ArrayList<Integer> moves = getMoves(position, false);
 
-		for (Pair<Integer, Integer> moveValue : moves) {
-			Move move = Move.from(moveValue.first());
+		for (Integer m : moves) {
+			Move move = Move.from(m);
 			if (!moveMap.containsKey(move.getStartPosition())) {
 				moveMap.put(move.getStartPosition(), new ArrayList<Move>());
 			}
@@ -379,8 +354,7 @@ public class MoveGeneration {
 		return moveMap;
 	}
 
-	private static void addMove(Collection<Pair<Integer, Integer>> moves, ChessBoard position,
-			int move) {
+	private static void addMove(Collection<Integer> moves, ChessBoard position, int move) {
 		int checkColor = ChessPiece.getColor(Move.getStartPiece(move));
 
 		position.move(move);
@@ -388,7 +362,7 @@ public class MoveGeneration {
 		position.unmove(move);
 
 		if (!isCheck) {
-			moves.add(new Pair<Integer, Integer>(move, position.staticExchangeEvaluation(move)));
+			moves.add(move);
 		}
 	}
 }

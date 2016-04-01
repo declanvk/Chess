@@ -1,13 +1,16 @@
 package engine;
 
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.PriorityQueue;
 
 import core.ChessBoard;
 import core.ChessPiece;
 import core.Move;
 import engine.TranspositionTable.Transposition;
+import util.Pair;
 
 /**
  * A wrapper for the MoveGeneration that organizes moves into quiet and capture
@@ -18,13 +21,18 @@ import engine.TranspositionTable.Transposition;
  */
 public class MoveList implements Iterable<Integer> {
 
-	private final ChessBoard position;
+	private static Comparator<Pair<Integer, Integer>> moveComparator =
+			new Comparator<Pair<Integer, Integer>>() {
+
+				@Override
+				public int compare(Pair<Integer, Integer> o1, Pair<Integer, Integer> o2) {
+					return Integer.compare(o2.second(), o1.second());
+				}
+
+			};
 
 	private Transposition pv;
-	private final ArrayList<Integer> captures;
-	private final ArrayList<Integer> quiet;
-
-	private final ArrayList<Integer> moves;
+	private final PriorityQueue<Pair<Integer, Integer>> moves;
 
 	/**
 	 * Constructs a MoveList with a given List of moves, a given position, and a
@@ -37,9 +45,8 @@ public class MoveList implements Iterable<Integer> {
 	 * @param table
 	 *            the transposition table to search for PV
 	 */
-	public MoveList(List<Integer> moves, ChessBoard position, TranspositionTable table) {
-		this.position = position;
-
+	public MoveList(List<Integer> moves, ChessBoard position, TranspositionTable table,
+			boolean quiescence) {
 		if (table.get(position.getZobristKey()) != null) {
 			this.pv = table.get(position.getZobristKey());
 			if (this.pv.key != position.getZobristKey().getKey()
@@ -48,27 +55,23 @@ public class MoveList implements Iterable<Integer> {
 			}
 		}
 
-		this.moves = new ArrayList<Integer>();
-		this.captures = new ArrayList<Integer>();
-		this.quiet = new ArrayList<Integer>();
+		this.moves = new PriorityQueue<Pair<Integer, Integer>>(moves.size() > 1 ? moves.size() : 1,
+				moveComparator);
+
 		for (Integer move : moves) {
-			if (pv != null && move == pv.bestMove) {
-				continue;
+			if (pv != null && move == pv.bestMove && pv.bestMove != Move.NULL_MOVE) {
+				this.moves.add(new Pair<Integer, Integer>(move, Integer.MAX_VALUE));
 			}
 
 			if (Move.getEndPiece(move) == ChessPiece.NULL_PIECE) {
-				this.quiet.add(move);
+				this.moves.add(new Pair<Integer, Integer>(move, 0));
 			} else {
-				this.captures.add(move);
+				int value = position.staticExchangeEvaluation(move);
+				if (!(quiescence && value < 0)) {
+					this.moves.add(new Pair<Integer, Integer>(move, value));
+				}
 			}
 		}
-
-		if (pv != null && pv.bestMove != Move.NULL_MOVE) {
-			this.moves.add(pv.bestMove);
-		}
-
-		this.moves.addAll(captures);
-		this.moves.addAll(quiet);
 	}
 
 	public int size() {
@@ -77,8 +80,32 @@ public class MoveList implements Iterable<Integer> {
 
 	@Override
 	public Iterator<Integer> iterator() {
-		// TODO Auto-generated method stub
-		return null;
+		return new MoveIterator(moves);
+	}
+
+	private class MoveIterator implements Iterator<Integer> {
+
+		private final Iterator<Pair<Integer, Integer>> iter;
+
+		public MoveIterator(Collection<Pair<Integer, Integer>> coll) {
+			this.iter = coll.iterator();
+		}
+
+		@Override
+		public boolean hasNext() {
+			return iter.hasNext();
+		}
+
+		@Override
+		public Integer next() {
+			return iter.next().first();
+		}
+
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
+
 	}
 
 }

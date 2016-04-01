@@ -5,10 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 
-import core.ChessPiece;
-import core.Move;
-import core.Move.Flags;
-import core.Position;
 import engine.TranspositionTable.Transposition;
 import engine.TranspositionTable.TranspositionType;
 
