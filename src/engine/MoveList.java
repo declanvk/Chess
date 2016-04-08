@@ -46,7 +46,7 @@ public class MoveList implements Iterable<Integer> {
 	 *            the transposition table to search for PV
 	 */
 	public MoveList(List<Integer> moves, ChessBoard position, TranspositionTable table,
-			boolean quiescence) {
+			int[][] killerMoves, int ply, boolean quiescence) {
 		if (table.get(position.getZobristKey()) != null) {
 			this.pv = table.get(position.getZobristKey());
 			if (this.pv.key != position.getZobristKey().getKey()
@@ -61,10 +61,9 @@ public class MoveList implements Iterable<Integer> {
 		for (Integer move : moves) {
 			if (pv != null && move == pv.bestMove && pv.bestMove != Move.NULL_MOVE) {
 				this.moves.add(new Pair<Integer, Integer>(move, Integer.MAX_VALUE));
-			}
-
-			if (Move.getEndPiece(move) == ChessPiece.NULL_PIECE) {
-				this.moves.add(new Pair<Integer, Integer>(move, 0));
+			} else if (Move.getEndPiece(move) == ChessPiece.NULL_PIECE) {
+				int value = isKiller(killerMoves, ply, move) ? 100 : 0;
+				this.moves.add(new Pair<Integer, Integer>(move, value));
 			} else {
 				int value = position.staticExchangeEvaluation(move);
 				if (!(quiescence && value < 0)) {
@@ -72,6 +71,15 @@ public class MoveList implements Iterable<Integer> {
 				}
 			}
 		}
+	}
+
+	private boolean isKiller(int[][] killerMoves, int ply, int move) {
+		for (int killerMove : killerMoves[ply]) {
+			if (killerMove == move) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public int size() {

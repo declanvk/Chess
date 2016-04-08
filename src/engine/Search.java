@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 import core.ChessBoard;
 import core.ChessColor;
+import core.ChessPiece;
 import core.Move;
 import core.Position;
 import engine.TranspositionTable.Transposition;
@@ -36,7 +37,9 @@ public class Search {
 	private boolean continueSearch;
 	private long delay;
 
-	private final int[][][] historyTable;
+	private TranspositionTable table;
+	private int[][] killer;
+	private int[][][] history;
 
 	/**
 	 * Constructs a new Search with specified time limit
@@ -47,8 +50,12 @@ public class Search {
 	public Search(long time) {
 		delay = time;
 		continueSearch = true;
-		historyTable = new int[ChessColor
+
+		// TODO decide on standard for max number of ply
+		killer = new int[100][3];
+		history = new int[ChessColor
 				.values().length][Position.NUM_TOTAL_VALUES][Position.NUM_TOTAL_VALUES];
+		table = new TranspositionTable(TABLE_KEY_SIZE);
 	}
 
 	/**
@@ -62,7 +69,6 @@ public class Search {
 	public Move execute(ChessBoard position) {
 		ArrayList<Integer> moves = MoveGeneration.getMoves(position, false);
 		ArrayList<Pair<Integer, Integer>> movesWithValues = new ArrayList<Pair<Integer, Integer>>();
-		TranspositionTable table = new TranspositionTable(TABLE_KEY_SIZE);
 
 		// SearchLogger searchLog = new SearchLogger(delay,
 		// position.getZobristKey().getKey());
@@ -80,14 +86,16 @@ public class Search {
 		for (int searchDepth = 1; continueSearch; searchDepth++) {
 			// searchLog.logIterativeDeepeningLevel(searchDepth);
 			movesWithValues.clear();
+			killer = new int[100][3];
+			history = new int[ChessColor
+					.values().length][Position.NUM_TOTAL_VALUES][Position.NUM_TOTAL_VALUES];
 
-			MoveList moveList = new MoveList(moves, position, table, false);
+			MoveList moveList = new MoveList(moves, position, table, killer, 0, false);
 			for (Integer move : moveList) {
 				position.move(move);
 				// searchLog.logNewSearchLevel(0, move);
 
-				int value =
-						pvs(position, table, searchDepth, Integer.MIN_VALUE, Integer.MAX_VALUE, 1);
+				int value = pvs(position, searchDepth, Integer.MIN_VALUE, Integer.MAX_VALUE, 1);
 				movesWithValues.add(new Pair<Integer, Integer>(move, value));
 
 				// searchLog.logSearchLevelReturn(0, move, value);
@@ -142,8 +150,7 @@ public class Search {
 		}
 	}
 
-	private int pvs(ChessBoard position, TranspositionTable table, int depth, int alpha, int beta,
-			int ply) {
+	private int pvs(ChessBoard position, int depth, int alpha, int beta, int ply) {
 		int alphaOriginal = alpha;
 
 		Transposition entry = table.get(position.getZobristKey());
@@ -164,7 +171,7 @@ public class Search {
 		}
 
 		if (depth <= 0) {
-			int eval = quiescent(position, table, alpha, beta);
+			int eval = quiescent(position, alpha, beta);
 
 			// log.logTerminal(ply, Integer.toString(eval),
 			// position.getZobristKey().getKey());
@@ -177,8 +184,8 @@ public class Search {
 			return DRAW;
 		}
 
-		MoveList moves =
-				new MoveList(MoveGeneration.getMoves(position, false), position, table, false);
+		MoveList moves = new MoveList(MoveGeneration.getMoves(position, false), position, table,
+				killer, 0, false);
 		if (moves.size() == 0) {
 			if (position.isCheck()) {
 				return -CHECKMATE + ply;
@@ -193,12 +200,15 @@ public class Search {
 		for (Integer move : moves) {
 			if (!madeFirstMove) {
 				position.move(move);
-				bestScore = -pvs(position, table, depth - 1, -beta, -alpha, ply + 1);
+				int ext = determineExtensions(position, moves, depth, ply);
+				bestScore = -pvs(position, depth + ext - 1, -beta, -alpha, ply + 1);
 				position.unmove(move);
 
 				if (bestScore > alpha) {
 					if (bestScore >= beta) {
 						bestMove = move;
+						updateKillerTable(ply, move);
+						updateHistoryTable(position.getActiveColor(), move, ply);
 						break;
 					}
 
@@ -207,9 +217,10 @@ public class Search {
 				madeFirstMove = true;
 			} else {
 				position.move(move);
-				int score = -pvs(position, table, depth - 1, -alpha - 1, -alpha, ply + 1);
+				int ext = determineExtensions(position, moves, depth, ply);
+				int score = -pvs(position, depth + ext - 1, -alpha - 1, -alpha, ply + 1);
 				if (alpha < score && score < beta) {
-					score = -pvs(position, table, depth - 1, -beta, -alpha, ply + 1);
+					score = -pvs(position, depth + ext - 1, -beta, -alpha, ply + 1);
 					if (score > alpha) {
 						alpha = score;
 					}
@@ -220,6 +231,8 @@ public class Search {
 					bestScore = score;
 					bestMove = move;
 					if (score >= beta) {
+						updateKillerTable(ply, move);
+						updateHistoryTable(position.getActiveColor(), move, ply);
 						break;
 					}
 				}
@@ -243,8 +256,32 @@ public class Search {
 		return bestScore;
 	}
 
-	private static int quiescent(ChessBoard position, TranspositionTable table, int alpha,
-			int beta) {
+	private int determineExtensions(ChessBoard position, MoveList moves, int depth, int ply) {
+		if (position.isCheck()) {
+			return 1;
+		} else if (moves.size() == 1) {
+			return 1;
+		} else {
+			return 0;
+		}
+	}
+
+	private void updateKillerTable(int ply, Integer move) {
+		for (int i = 0; i < killer[ply].length; i++) {
+			if (killer[ply][i] == Move.NULL_MOVE) {
+				killer[ply][i] = move;
+			}
+		}
+	}
+
+	private void updateHistoryTable(int activeColor, int move, int ply) {
+		if (Move.getEndPiece(move) == ChessPiece.NULL_PIECE) {
+			history[activeColor][Move.getStartPosition(move)][Move.getEndPosition(move)] +=
+					1 << ply;
+		}
+	}
+
+	private int quiescent(ChessBoard position, int alpha, int beta) {
 		int standingPat = position.evaluate();
 		if (standingPat >= beta) {
 			return beta;
@@ -252,11 +289,11 @@ public class Search {
 			alpha = standingPat;
 		}
 
-		MoveList moves =
-				new MoveList(MoveGeneration.getMoves(position, true), position, table, true);
+		MoveList moves = new MoveList(MoveGeneration.getMoves(position, true), position, table,
+				killer, 0, true);
 		for (Integer move : moves) {
 			position.move(move);
-			int value = -quiescent(position, table, -beta, -alpha);
+			int value = -quiescent(position, -beta, -alpha);
 			position.unmove(move);
 
 			if (value >= beta) {
