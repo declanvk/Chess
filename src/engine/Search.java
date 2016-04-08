@@ -9,7 +9,9 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import core.ChessBoard;
+import core.ChessColor;
 import core.Move;
+import core.Position;
 import engine.TranspositionTable.Transposition;
 import engine.TranspositionTable.TranspositionType;
 import util.Pair;
@@ -30,10 +32,11 @@ public class Search {
 
 	private static final ScheduledExecutorService timer =
 			Executors.newSingleThreadScheduledExecutor();
-	private static final int[] color = { 1, -1 };
 
 	private boolean continueSearch;
 	private long delay;
+
+	private final int[][][] historyTable;
 
 	/**
 	 * Constructs a new Search with specified time limit
@@ -44,6 +47,8 @@ public class Search {
 	public Search(long time) {
 		delay = time;
 		continueSearch = true;
+		historyTable = new int[ChessColor
+				.values().length][Position.NUM_TOTAL_VALUES][Position.NUM_TOTAL_VALUES];
 	}
 
 	/**
@@ -59,7 +64,8 @@ public class Search {
 		ArrayList<Pair<Integer, Integer>> movesWithValues = new ArrayList<Pair<Integer, Integer>>();
 		TranspositionTable table = new TranspositionTable(TABLE_KEY_SIZE);
 
-		SearchLogger searchLog = new SearchLogger(delay, position.getZobristKey().getKey());
+		// SearchLogger searchLog = new SearchLogger(delay,
+		// position.getZobristKey().getKey());
 
 		this.continueSearch = true;
 		ScheduledFuture<?> task = timer.schedule(new Runnable() {
@@ -72,25 +78,25 @@ public class Search {
 		}, delay, TimeUnit.MILLISECONDS);
 
 		for (int searchDepth = 1; continueSearch; searchDepth++) {
-			searchLog.logIterativeDeepeningLevel(searchDepth);
+			// searchLog.logIterativeDeepeningLevel(searchDepth);
 			movesWithValues.clear();
 
 			MoveList moveList = new MoveList(moves, position, table, false);
 			for (Integer move : moveList) {
 				position.move(move);
-				searchLog.logNewSearchLevel(0, move);
+				// searchLog.logNewSearchLevel(0, move);
 
-				int value = negaMax(position, table, searchDepth, Integer.MIN_VALUE,
-						Integer.MAX_VALUE, 1, searchLog);
+				int value =
+						pvs(position, table, searchDepth, Integer.MIN_VALUE, Integer.MAX_VALUE, 1);
 				movesWithValues.add(new Pair<Integer, Integer>(move, value));
 
-				searchLog.logSearchLevelReturn(0, move, value);
+				// searchLog.logSearchLevelReturn(0, move, value);
 				position.unmove(move);
 			}
 
-			searchLog.logIterativeDeepeningBestMove(searchDepth,
-					table.get(position.getZobristKey()) != null
-							? table.get(position.getZobristKey()).bestMove : Move.NULL_MOVE);
+			// searchLog.logIterativeDeepeningBestMove(searchDepth,
+			// table.get(position.getZobristKey()) != null ?
+			// table.get(position.getZobristKey()).bestMove : Move.NULL_MOVE);
 
 			Collections.sort(movesWithValues, new Comparator<Pair<Integer, Integer>>() {
 
@@ -109,7 +115,7 @@ public class Search {
 			System.err.println("   PV: " + getPVString(position, table));
 		}
 
-		searchLog.close();
+		// searchLog.close();
 		task.cancel(true);
 
 		return Move.from(movesWithValues.get(0).first());
@@ -136,14 +142,13 @@ public class Search {
 		}
 	}
 
-	private int negaMax(ChessBoard position, TranspositionTable table, int depth, int alpha,
-			int beta, int ply, SearchLogger log) {
-
+	private int pvs(ChessBoard position, TranspositionTable table, int depth, int alpha, int beta,
+			int ply) {
 		int alphaOriginal = alpha;
 
 		Transposition entry = table.get(position.getZobristKey());
 		if (entry != null && entry.depth >= depth) {
-			log.logTranspositionHit(ply, entry);
+			// log.logTranspositionHit(ply, entry);
 
 			if (entry.type == TranspositionType.EXACT.value()) {
 				return entry.value;
@@ -161,18 +166,17 @@ public class Search {
 		if (depth <= 0) {
 			int eval = quiescent(position, table, alpha, beta);
 
-			log.logTerminal(ply, Integer.toString(eval), position.getZobristKey().getKey());
+			// log.logTerminal(ply, Integer.toString(eval),
+			// position.getZobristKey().getKey());
 
 			return eval;
 		} else if (position.isRepetition() || position.hasInsufficientMaterial()
 				|| position.getHalfTurnClock() >= 100) {
-			log.logTerminal(ply, "DRAW", position.getZobristKey().getKey());
+			// log.logTerminal(ply, "DRAW", position.getZobristKey().getKey());
 
 			return DRAW;
 		}
 
-		int bestValue = Integer.MIN_VALUE;
-		int bestMove = Move.NULL_MOVE;
 		MoveList moves =
 				new MoveList(MoveGeneration.getMoves(position, false), position, table, false);
 		if (moves.size() == 0) {
@@ -183,40 +187,60 @@ public class Search {
 			}
 		}
 
+		boolean madeFirstMove = false;
+		int bestMove = Move.NULL_MOVE;
+		int bestScore = Integer.MIN_VALUE;
 		for (Integer move : moves) {
+			if (!madeFirstMove) {
+				position.move(move);
+				bestScore = -pvs(position, table, depth - 1, -beta, -alpha, ply + 1);
+				position.unmove(move);
 
-			position.move(move);
-			log.logNewSearchLevel(ply, move);
+				if (bestScore > alpha) {
+					if (bestScore >= beta) {
+						bestMove = move;
+						break;
+					}
 
-			int value = -negaMax(position, table, depth - 1, -beta, -alpha, ply + 1, log);
+					alpha = bestScore;
+				}
+				madeFirstMove = true;
+			} else {
+				position.move(move);
+				int score = -pvs(position, table, depth - 1, -alpha - 1, -alpha, ply + 1);
+				if (alpha < score && score < beta) {
+					score = -pvs(position, table, depth - 1, -beta, -alpha, ply + 1);
+					if (score > alpha) {
+						alpha = score;
+					}
+				}
+				position.unmove(move);
 
-			log.logSearchLevelReturn(ply, move, value);
-			position.unmove(move);
-			if (value > bestValue) {
-				bestValue = value;
-				bestMove = move;
-			}
-			alpha = Math.max(alpha, value);
-			if (alpha >= beta) {
-				break;
+				if (score > bestScore) {
+					bestScore = score;
+					bestMove = move;
+					if (score >= beta) {
+						break;
+					}
+				}
 			}
 		}
 
 		TranspositionType type;
-		if (bestValue <= alphaOriginal) {
+		if (bestScore <= alphaOriginal) {
 			type = TranspositionType.UPPER;
 			bestMove = Move.NULL_MOVE;
-		} else if (bestValue >= beta) {
+		} else if (bestScore >= beta) {
 			type = TranspositionType.LOWER;
 			bestMove = Move.NULL_MOVE;
 		} else {
 			type = TranspositionType.EXACT;
 		}
-		entry = new Transposition(position.getZobristKey().getKey(), bestMove, bestValue, depth,
+		entry = new Transposition(position.getZobristKey().getKey(), bestMove, bestScore, depth,
 				type.value());
 		table.set(position.getZobristKey(), entry);
 
-		return bestValue;
+		return bestScore;
 	}
 
 	private static int quiescent(ChessBoard position, TranspositionTable table, int alpha,

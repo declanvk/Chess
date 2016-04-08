@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
 
 import engine.TranspositionTable.Transposition;
 import engine.TranspositionTable.TranspositionType;
@@ -24,6 +25,7 @@ public class SearchLogger {
 	}
 
 	private PrintStream output;
+	private ArrayList<Integer> moveChain;
 
 	public SearchLogger(long delay, long key) {
 		int count = 0;
@@ -39,7 +41,9 @@ public class SearchLogger {
 			e.printStackTrace();
 		}
 
-		output.printf("Logging Search with delay of %d milliseconds and key %d\n", delay, key);
+		this.moveChain = new ArrayList<Integer>();
+
+		output.printf("Logging search with delay of %d milliseconds and key %d\n", delay, key);
 	}
 
 	public void logIterativeDeepeningLevel(int level) {
