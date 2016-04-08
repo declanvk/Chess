@@ -46,7 +46,8 @@ public class MoveList implements Iterable<Integer> {
 	 *            the transposition table to search for PV
 	 */
 	public MoveList(List<Integer> moves, ChessBoard position, TranspositionTable table,
-			int[][] killerMoves, int ply, boolean quiescence) {
+			int[][] killerMoves, int[][][] historyTable, int activeColor, int ply,
+			boolean quiescence) {
 		if (table.get(position.getZobristKey()) != null) {
 			this.pv = table.get(position.getZobristKey());
 			if (this.pv.key != position.getZobristKey().getKey()
@@ -63,6 +64,8 @@ public class MoveList implements Iterable<Integer> {
 				this.moves.add(new Pair<Integer, Integer>(move, Integer.MAX_VALUE));
 			} else if (Move.getEndPiece(move) == ChessPiece.NULL_PIECE) {
 				int value = isKiller(killerMoves, ply, move) ? 100 : 0;
+				value += historyTable[activeColor][Move.getStartPosition(move)][Move
+						.getEndPiece(move)];
 				this.moves.add(new Pair<Integer, Integer>(move, value));
 			} else {
 				int value = position.staticExchangeEvaluation(move);

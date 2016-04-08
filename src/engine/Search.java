@@ -90,7 +90,8 @@ public class Search {
 			history = new int[ChessColor
 					.values().length][Position.NUM_TOTAL_VALUES][Position.NUM_TOTAL_VALUES];
 
-			MoveList moveList = new MoveList(moves, position, table, killer, 0, false);
+			MoveList moveList = new MoveList(moves, position, table, killer, history,
+					position.getActiveColor(), 0, false);
 			for (Integer move : moveList) {
 				position.move(move);
 				// searchLog.logNewSearchLevel(0, move);
@@ -171,7 +172,7 @@ public class Search {
 		}
 
 		if (depth <= 0) {
-			int eval = quiescent(position, alpha, beta);
+			int eval = quiescent(position, alpha, beta, ply + 1);
 
 			// log.logTerminal(ply, Integer.toString(eval),
 			// position.getZobristKey().getKey());
@@ -185,7 +186,7 @@ public class Search {
 		}
 
 		MoveList moves = new MoveList(MoveGeneration.getMoves(position, false), position, table,
-				killer, 0, false);
+				killer, history, position.getActiveColor(), ply, false);
 		if (moves.size() == 0) {
 			if (position.isCheck()) {
 				return -CHECKMATE + ply;
@@ -281,7 +282,7 @@ public class Search {
 		}
 	}
 
-	private int quiescent(ChessBoard position, int alpha, int beta) {
+	private int quiescent(ChessBoard position, int alpha, int beta, int ply) {
 		int standingPat = position.evaluate();
 		if (standingPat >= beta) {
 			return beta;
@@ -290,10 +291,10 @@ public class Search {
 		}
 
 		MoveList moves = new MoveList(MoveGeneration.getMoves(position, true), position, table,
-				killer, 0, true);
+				killer, history, position.getActiveColor(), ply, true);
 		for (Integer move : moves) {
 			position.move(move);
-			int value = -quiescent(position, -beta, -alpha);
+			int value = -quiescent(position, -beta, -alpha, ply + 1);
 			position.unmove(move);
 
 			if (value >= beta) {
